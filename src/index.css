@@ -1,12 +1,17 @@
-body {
+body,
+html,
+#root {
+  height: 100%;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  background-color: #f0e6d2;
+}
+
+body {
   font-family: "Pacifico", cursive;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-html {
-  background-color: #f0e6d2;
 }
 
 code {

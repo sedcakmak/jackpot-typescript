@@ -5,9 +5,8 @@ const Image = styled.img`
   width: 80px;
   height: 80px;
   border: 12px solid #eaeaea;
-  padding: 10px;
   border-radius: 16px;
-  margin: 0 16px;
+  margin: 0 12px;
   background-color: whitesmoke;
 `;
 
