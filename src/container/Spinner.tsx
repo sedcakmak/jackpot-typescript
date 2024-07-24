@@ -2,16 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import Wheel from "../components/Wheel";
 import styled from "styled-components";
 
-import strawberry from "../assets/img/strawberry.png";
-import banana from "../assets/img/banana.png";
+import horseshoe from "../assets/img/horseshoe.png";
+import star from "../assets/img/star.png";
 import orange from "../assets/img/orange.png";
-import monkey from "../assets/img/monkey.png";
+import watermelon from "../assets/img/watermelon.png";
 import cherry from "../assets/img/cherry.png";
 import bell from "../assets/img/bell.png";
 import seven from "../assets/img/seven.png";
 
 const Wrapper = styled.div`
-  // background-color: #1e1e2e;
   background-color: #3a3a6d;
   padding: 10px;
   border-radius: 16px;
@@ -28,8 +27,7 @@ const Spinner: React.FC<SpinnerProps> = ({ spin, onStop }) => {
   const [wheels, setWheels] = useState<string[]>([]);
   const isSpinning = useRef<NodeJS.Timeout | null>(null);
 
-  const images = [cherry, bell, seven];
-  // const images = [strawberry, banana, orange, monkey, cherry, bell, seven];
+  const images = [orange, watermelon, horseshoe, star, cherry, bell, seven];
 
   useEffect(() => {
     setWheels([randomImage(), randomImage(), randomImage()]);
