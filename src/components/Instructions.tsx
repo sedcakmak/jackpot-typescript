@@ -1,6 +1,8 @@
 import React from "react";
 import { Offcanvas } from "react-bootstrap";
 import styled from "styled-components";
+import polygonLogo from "../assets/img/polygon_logo.png";
+import circleLogo from "../assets/img/circle_logo.jpg";
 
 const StyledOffcanvasBody = styled(Offcanvas.Body)`
   background-color: #f9f9f9;
@@ -16,6 +18,10 @@ const Text = styled.p`
   font-size: 1rem;
   color: #555;
   line-height: 1.6;
+`;
+
+const Logo = styled.img`
+  height: 1.2rem;
 `;
 
 interface InstructionsProps {
@@ -37,14 +43,27 @@ const Instructions: React.FC<InstructionsProps> = ({ show, handleClose }) => (
         Hey there!🎉 Ready to try your luck? Let's get started!
         <br />
         <br />
-        First things first, click the wallet icon to either connect your Circle
-        wallet or create a new one. It's super easy! Please note that this game
-        is running on TestNet, so you'll be using virtual currencies for now.
-        Real cryptocurrencies might be added in the future!
+        First things first, click the wallet icon to either create a new{" "}
+        <Logo
+          src={circleLogo}
+          alt="Circle Logo"
+        />
+        <strong>Circle </strong> USDC wallet or check the balance of your
+        existing one. It’s super easy! Please note that, for now, you’ll be
+        using Testnet USDC in this game.
         <br />
         <br />
-        Once you're all set up, deposit some USDC into the piggy bank from your
-        wallet. This will let you join the fun!
+        Once you're all set up, click on the piggy bank to deposit some USDC
+        from your wallet. This will let you join the fun!
+        <br />
+        <br />
+        If you don't have enough deposits, click on the faucet to visit Circle's
+        Testnet Faucet. Make sure the USDC option is chosen and select{" "}
+        <Logo
+          src={polygonLogo}
+          alt="Polygon Logo"
+        />
+        <strong>Polygon PoS Amoy</strong> as your network.
         <br />
         <br />
         Each spin costs just <strong>0.5 USDC</strong>. Here's what you could
@@ -60,8 +79,8 @@ const Instructions: React.FC<InstructionsProps> = ({ show, handleClose }) => (
         <strong>Grand Prize (100 USDC):</strong> All three images match!
         <br />
         <br />
-        If you want to withdraw any leftover funds, just hit the{" "}
-        <strong>Claim</strong> button. It's that simple!
+        If you want to withdraw any leftover funds, just hit the
+        <strong> Claim</strong> button. It's that simple!
         <br />
         <br />
         Feel free to spin as many times as you like, and may the odds be ever in

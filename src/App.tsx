@@ -4,6 +4,7 @@ import styled from "styled-components";
 import SlotMachine from "./container/SlotMachine";
 import Instructions from "./components/Instructions";
 import ImagesContainer from "./container/ImagesContainer";
+import WalletModal from "./components/WalletModal";
 
 const Page = styled.div`
   text-align: center;
@@ -43,7 +44,7 @@ const InstructionsButton = styled.button`
 
 const Title = styled.h1`
   font-family: "Permanent Marker", cursive;
-  font-size: 3.75rem;
+  font-size: 3.3rem;
   text-transform: uppercase;
   letter-spacing: 1rem;
   color: #ff9900;
@@ -53,9 +54,13 @@ const Title = styled.h1`
 
 const App: React.FC = () => {
   const [showInstructions, setShowInstructions] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [badgeValue, setBadgeValue] = useState(0.5);
 
   const handleClose = () => setShowInstructions(false);
   const handleShow = () => setShowInstructions(true);
+  const handleWalletClose = () => setShowWalletModal(false);
+  const handleWalletShow = () => setShowWalletModal(true);
 
   return (
     <Page>
@@ -76,20 +81,30 @@ const App: React.FC = () => {
             md={4}
             className="d-flex justify-content-center align-items-center my-3"
           >
-            <SlotMachine />
+            <SlotMachine
+              badgeValue={badgeValue}
+              setBadgeValue={setBadgeValue}
+            />
           </Col>
           <Col
             xs={12}
             md={4}
             className="d-flex justify-content-center align-items-center"
           >
-            <ImagesContainer />
+            <ImagesContainer
+              onWalletClick={handleWalletShow}
+              badgeValue={badgeValue}
+            />
           </Col>
         </Row>
       </Container>
       <Instructions
         show={showInstructions}
         handleClose={handleClose}
+      />
+      <WalletModal
+        show={showWalletModal}
+        onClose={handleWalletClose}
       />
     </Page>
   );

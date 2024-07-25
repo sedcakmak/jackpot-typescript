@@ -1,8 +1,33 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Badge } from "react-bootstrap";
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 import wallet from "../assets/img/wallet.png";
 import piggybank from "../assets/img/piggybank.png";
+import faucet from "../assets/img/faucet.png";
+
+const wiggle = keyframes`
+  0% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
+  100% { transform: rotate(-1deg); }
+`;
+
+const PiggybankImage = styled.img<{ $animate: boolean }>`
+  height: 5rem;
+  margin: 0 0.5rem;
+  transition: transform 0.3s ease;
+  ${({ $animate }) =>
+    $animate
+      ? css`
+          animation: ${wiggle} 1s ease;
+        `
+      : css`
+          animation: none;
+        `}
+  &:hover {
+    cursor: pointer;
+    transform: scale(1.2);
+  }
+`;
 
 const Image = styled.img`
   height: 5rem;
@@ -50,7 +75,25 @@ const PiggybankContainer = styled.div`
   margin: 0 0.5rem;
 `;
 
-const ImagesContainer: React.FC = () => {
+interface ImagesContainerProps {
+  onWalletClick: () => void;
+  badgeValue: number;
+}
+
+const ImagesContainer: React.FC<ImagesContainerProps> = ({
+  onWalletClick,
+  badgeValue,
+}) => {
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    if (badgeValue > 0) {
+      setAnimate(true);
+      const timer = setTimeout(() => setAnimate(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [badgeValue]);
+
   return (
     <Container fluid>
       <Row className="justify-content-center">
@@ -62,16 +105,25 @@ const ImagesContainer: React.FC = () => {
             <Image
               src={wallet}
               alt="Wallet"
+              onClick={onWalletClick}
             />
             <PiggybankContainer>
-              <Image
+              <PiggybankImage
                 src={piggybank}
                 alt="Piggybank"
+                $animate={animate}
               />
               <h6>
-                <Badge bg="primary">100 USDC</Badge>
+                <Badge bg="primary">{badgeValue} USDC</Badge>
               </h6>
             </PiggybankContainer>
+            <Image
+              src={faucet}
+              alt="Faucet"
+              onClick={() =>
+                window.open("https://faucet.circle.com/", "_blank")
+              }
+            />
           </div>
           <ClaimButton>Claim</ClaimButton>
         </Col>
