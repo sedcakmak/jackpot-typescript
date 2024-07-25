@@ -75,14 +75,26 @@
 
 import express from "express";
 import fetch from "node-fetch";
-import cors from "cors"; // Import CORS middleware
+import cors from "cors";
 import "dotenv/config";
+import walletRouter from "./routes/wallet.js";
 
 const app = express();
-const port = 3001; // Change this port if necessary
+const port = 3001;
 
-// Use CORS middleware
+console.log("Server starting...");
+
 app.use(cors());
+app.use(express.json());
+
+app.use("/api", walletRouter);
+console.log("Wallet router attached");
+console.log("API_KEY:", process.env.API_KEY);
+console.log("APP_ID:", process.env.APP_ID);
+
+app.get("/test", (req, res) => {
+  res.json({ message: "Test route working" });
+});
 
 app.get("/api/check-balance/:ucwId", async (req, res) => {
   const { ucwId } = req.params;
