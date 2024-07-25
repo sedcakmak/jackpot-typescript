@@ -3,6 +3,7 @@ import { Modal, Button, Form } from "react-bootstrap";
 import { checkBalance, getBalance } from "../api/wallet";
 import newWallet from "../assets/img/new_wallet.png";
 import oldWallet from "../assets/img/old_wallet.png";
+import { handleCreateWallet } from "./CreateWallet";
 
 const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
   show,
@@ -119,24 +120,22 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
             <p>
               If you don't have a Circle account, please go{" "}
               <a
-                href="https://circle.com"
+                href="https://console.circle.com/signup"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 here
-              </a>
-              . Click
-              <em> Get Started </em>
-              at the top right of the page and choose
-              <strong>
-                <em> Build Web3 Enabled Apps</em>
-              </strong>
-              . Follow the instructions to set up your account. Once your
-              account is set up, click the button below to create your
-              user-controlled wallet.
+              </a>{" "}
+              and follow the instructions. Once your account is set up, click
+              the button below to create your user-controlled wallet.
             </p>
 
-            <Button variant="primary">Create Wallet</Button>
+            <Button
+              variant="primary"
+              onClick={handleCreateWallet}
+            >
+              Create Wallet
+            </Button>
           </div>
         )}
         {step === "createAccount" && (
