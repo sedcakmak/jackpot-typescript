@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled, { keyframes } from "styled-components";
 import Confetti from "react-confetti";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Modal, Button } from "react-bootstrap";
 import { ReactComponent as USDCSvg } from "../assets/img/svg/usdc.svg";
 import Spinner from "./Spinner";
 import Sound from "../components/Sound";
@@ -66,8 +66,8 @@ const StyledUSDCSvg = styled(USDCSvg)`
 const ResultText = styled.div`
   color: #d32f2f;
   font-weight: bold;
-  margin: 20px 0; /* Ensure space above and below */
-  min-height: 80px; /* Reserve space for the result text */
+  margin: 20px 0;
+  min-height: 80px;
 `;
 
 const Winner = styled.div`
@@ -86,11 +86,15 @@ const MAX_PRIZE = 100;
 const CONSEC_PRIZE = 10;
 const NON_CONSEC_PRIZE = 1;
 
-const SlotMachine: React.FC = () => {
+const SlotMachine: React.FC<{
+  badgeValue: number;
+  setBadgeValue: React.Dispatch<React.SetStateAction<number>>;
+}> = ({ badgeValue, setBadgeValue }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<"win" | "lose" | null>(null);
   const [prize, setPrize] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasSpun = useRef(false);
 
   useEffect(() => {
@@ -113,6 +117,14 @@ const SlotMachine: React.FC = () => {
   }, [result, prize]);
 
   const handleStart = () => {
+    if (badgeValue < 0.5) {
+      setShowBadgeModal(true);
+      return;
+    }
+
+
+    setBadgeValue((prevValue) => prevValue - 0.5);
+
     setIsRunning(true);
     setResult(null);
     setPrize(0);
@@ -129,20 +141,26 @@ const SlotMachine: React.FC = () => {
     const images = wheels.map((wheel) => wheel.split("/").pop());
     const uniqueImages = [...new Set(images)];
 
+    let newPrize = 0;
     if (uniqueImages.length === 3) {
       setResult("lose");
-      setPrize(0);
+      newPrize = 0;
     } else if (uniqueImages.length === 1) {
       setResult("win");
-      setPrize(MAX_PRIZE);
+      newPrize = MAX_PRIZE;
     } else if (images[0] === images[1] || images[1] === images[2]) {
       setResult("win");
-      setPrize(CONSEC_PRIZE);
+      newPrize = CONSEC_PRIZE;
     } else {
       setResult("win");
-      setPrize(NON_CONSEC_PRIZE);
+      newPrize = NON_CONSEC_PRIZE;
     }
+
+    setPrize(newPrize);
+    setBadgeValue((prevValue) => prevValue + newPrize);
   };
+
+  const handleModalClose = () => setShowBadgeModal(false);
 
   return (
     <Container
@@ -167,7 +185,7 @@ const SlotMachine: React.FC = () => {
       </ButtonWrapper>
       <ResultText>
         {result === "win" && hasSpun.current && (
-          <>
+          <> 
             {prize === MAX_PRIZE && showConfetti && (
               <Confetti
                 width={window.innerWidth}
@@ -188,6 +206,27 @@ const SlotMachine: React.FC = () => {
           </>
         )}
       </ResultText>
+
+      <Modal
+        show={showBadgeModal}
+        onHide={handleModalClose}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Insufficient Credits</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Not enough credits. Please deposit USDC to your piggy bank. You need
+          at least 0.5 USDC to play.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={handleModalClose}
+          >
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
