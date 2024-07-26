@@ -82,7 +82,6 @@ export const checkBalance = async (id: string): Promise<boolean> => {
     const data = await response.json();
     console.log("Balance check response:", data);
 
-    // Assuming balanceData has a structure like { balance: { tokenBalances: [...] } }
     return data.balance.tokenBalances.some(
       (token: { token: { symbol: string }; amount: string }) =>
         token.token.symbol === "USDC" && parseFloat(token.amount) >= 0.5
