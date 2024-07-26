@@ -9,30 +9,36 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
   show,
   onClose,
 }) => {
-  const [step, setStep] = useState<
-    "initial" | "id" | "balance" | "createUCW" | "createAccount"
-  >("initial");
+  const [step, setStep] = useState<"initial" | "id" | "balance" | "createUCW">(
+    "initial"
+  );
   const [ucwId, setUcwId] = useState<string>("");
   const [balance, setBalance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleIdSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Id submitted:", ucwId);
+
     try {
       const isValidId = await checkBalance(ucwId);
-      console.log("Id validation result:", isValidId);
-      if (isValidId) {
-        const currentBalance = await getBalance(ucwId);
-        console.log("Current balance:", currentBalance);
-        setBalance(currentBalance);
-        if (currentBalance >= 0.5) {
-          console.log("Balance is sufficient, setting step to 'balance'");
-          setStep("balance");
-        }
+      if (!isValidId) {
+        setError("Invalid wallet ID.");
+        console.log("Error: Invalid wallet ID.");
+        return;
+      }
+
+      const currentBalance = await getBalance(ucwId);
+
+      if (currentBalance < 0.5) {
+        setError(
+          "Insufficient balance. Please deposit more funds using the faucet."
+        );
+        console.log("Error: Insufficient balance.");
       } else {
-        setError("Invalid address or insufficient balance.");
-        console.log("Error: Invalid address or insufficient balance.");
+        setBalance(currentBalance);
+        setError(null);
+        console.log("Balance is sufficient, setting step to 'balance'");
+        setStep("balance");
       }
     } catch (err) {
       setError("Error checking balance.");
@@ -136,21 +142,6 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
             >
               Create Wallet
             </Button>
-          </div>
-        )}
-        {step === "createAccount" && (
-          <div>
-            <p>
-              You need a Circle account. Please create one{" "}
-              <a
-                href="https://circle.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                here
-              </a>
-              .
-            </p>
           </div>
         )}
       </Modal.Body>
