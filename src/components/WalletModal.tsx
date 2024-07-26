@@ -138,7 +138,21 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
 
             <Button
               variant="primary"
-              onClick={handleCreateWallet}
+              onClick={async () => {
+                try {
+                  const walletInfo = await handleCreateWallet();
+                  if (walletInfo) {
+                    console.log("New wallet created:", walletInfo);
+                    // You can update state here to show the new wallet info
+                    // For example:
+                    // setNewWalletInfo(walletInfo);
+                    // setStep("newWalletCreated");
+                  }
+                } catch (error) {
+                  console.error("Failed to create wallet:", error);
+                  setError("Failed to create wallet. Please try again.");
+                }
+              }}
             >
               Create Wallet
             </Button>
