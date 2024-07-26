@@ -5,6 +5,7 @@ import SlotMachine from "./container/SlotMachine";
 import Instructions from "./components/Instructions";
 import ImagesContainer from "./container/ImagesContainer";
 import WalletModal from "./components/WalletModal";
+import ShowInfo from "./components/ShowInfo";
 
 const Page = styled.div`
   text-align: center;
@@ -65,6 +66,7 @@ const App: React.FC = () => {
   return (
     <Page>
       <Title>Quick Win</Title>
+      <ShowInfo />
       <Container fluid>
         <Row>
           <Col
