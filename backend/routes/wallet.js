@@ -114,4 +114,49 @@ router.post("/create-wallet", async (req, res) => {
   }
 });
 
+router.get("/wallet-info", async (req, res) => {
+  try {
+    const userToken = req.headers.authorization.split(" ")[1];
+
+    if (!userToken) {
+      return res.status(400).json({ error: "User token is missing" });
+    }
+
+    const response = await axios.get("https://api.circle.com/v1/w3s/wallets", {
+      headers: {
+        Authorization: `Bearer ${process.env.API_KEY}`,
+        "X-User-Token": userToken,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+    const wallets = response.data.data.wallets;
+    if (wallets && wallets.length > 0) {
+      const latestWallet = wallets[0];
+
+      // Log the wallet information
+      console.log("Wallet Info:", {
+        id: latestWallet.id,
+        state: latestWallet.state,
+        address: latestWallet.address,
+        blockchain: latestWallet.blockchain,
+        createDate: latestWallet.createDate,
+      });
+
+      res.json({
+        id: latestWallet.id,
+        state: latestWallet.state,
+        address: latestWallet.address,
+        blockchain: latestWallet.blockchain,
+        createDate: latestWallet.createDate,
+      });
+    } else {
+      res.status(404).json({ error: "No wallet found" });
+    }
+  } catch (error) {
+    console.error("Error fetching wallet info:", error);
+    res.status(500).json({ error: "Failed to fetch wallet info" });
+  }
+});
+
 export default router;
