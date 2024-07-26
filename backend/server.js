@@ -12,6 +12,8 @@ app.use(express.json());
 
 app.use("/api", walletRouter);
 
+//Get Balance of an Existing Wallet
+
 app.get("/api/check-balance/:ucwId", async (req, res) => {
   const { ucwId } = req.params;
   const balanceUrl = `https://api.circle.com/v1/w3s/wallets/${ucwId}/balances`;
@@ -39,7 +41,8 @@ app.get("/api/check-balance/:ucwId", async (req, res) => {
   }
 });
 
-// Define the /api/wallet-info endpoint
+// Newly Created Wallet Info
+
 app.get("/api/wallet-info", async (req, res) => {
   const { authorization } = req.headers;
   console.log("Received Authorization header:", authorization);
