@@ -55,7 +55,7 @@ const Title = styled.h1`
 const App: React.FC = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const [badgeValue, setBadgeValue] = useState(1000.5);
+  const [badgeValue, setBadgeValue] = useState(0);
 
   const handleClose = () => setShowInstructions(false);
   const handleShow = () => setShowInstructions(true);
