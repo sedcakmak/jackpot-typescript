@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import walletRouter from "./routes/wallet.js";
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
