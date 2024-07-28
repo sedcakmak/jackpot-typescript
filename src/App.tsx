@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import styled from "styled-components";
 import SlotMachine from "./container/SlotMachine";
 import Instructions from "./components/Instructions";
 import ImagesContainer from "./container/ImagesContainer";
 import WalletModal from "./components/WalletModal";
+import { WalletProvider, useWallet } from "./contexts/WalletContext";
 
 const Page = styled.div`
   text-align: center;
@@ -62,51 +63,59 @@ const App: React.FC = () => {
   const handleWalletClose = () => setShowWalletModal(false);
   const handleWalletShow = () => setShowWalletModal(true);
 
+  // const { newWalletInfo } = useWallet();
+
+  // useEffect(() => {
+  //   console.log("newWalletInfo in App:", newWalletInfo);
+  // }, [newWalletInfo]);
+
   return (
-    <Page>
-      <Title>Quick Win</Title>
-      <Container fluid>
-        <Row>
-          <Col
-            xs={12}
-            md={4}
-            className="d-flex justify-content-center align-items-center"
-          >
-            <InstructionsButton onClick={handleShow}>
-              Instructions
-            </InstructionsButton>
-          </Col>
-          <Col
-            xs={12}
-            md={4}
-            className="d-flex justify-content-center align-items-center my-3"
-          >
-            <SlotMachine
-              badgeValue={badgeValue}
-              setBadgeValue={setBadgeValue}
-            />
-          </Col>
-          <Col
-            xs={12}
-            md={4}
-            className="d-flex justify-content-center align-items-center"
-          >
-            <ImagesContainer
-              onWalletClick={handleWalletShow}
-              badgeValue={badgeValue}
-            />
-          </Col>
-        </Row>
-      </Container>
-      <Instructions
-        show={showInstructions}
-        handleClose={handleClose}
-      />
-      <WalletModal
-        show={showWalletModal}
-        onClose={handleWalletClose}
-      />
-    </Page>
+    <WalletProvider>
+      <Page>
+        <Title>Quick Win</Title>
+        <Container fluid>
+          <Row>
+            <Col
+              xs={12}
+              md={4}
+              className="d-flex justify-content-center align-items-center"
+            >
+              <InstructionsButton onClick={handleShow}>
+                Instructions
+              </InstructionsButton>
+            </Col>
+            <Col
+              xs={12}
+              md={4}
+              className="d-flex justify-content-center align-items-center my-3"
+            >
+              <SlotMachine
+                badgeValue={badgeValue}
+                setBadgeValue={setBadgeValue}
+              />
+            </Col>
+            <Col
+              xs={12}
+              md={4}
+              className="d-flex justify-content-center align-items-center"
+            >
+              <ImagesContainer
+                onWalletClick={handleWalletShow}
+                badgeValue={badgeValue}
+              />
+            </Col>
+          </Row>
+        </Container>
+        <Instructions
+          show={showInstructions}
+          handleClose={handleClose}
+        />
+        <WalletModal
+          show={showWalletModal}
+          onClose={handleWalletClose}
+        />
+      </Page>
+    </WalletProvider>
   );
 };
 

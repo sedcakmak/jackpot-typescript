@@ -1,7 +1,7 @@
 import axios from "axios";
 import { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
 
-interface WalletInfo {
+export interface WalletInfo {
   id: string;
   state: string;
   address: string;
@@ -57,7 +57,7 @@ export const handleCreateWallet = async (): Promise<WalletInfo | null> => {
 
         console.log("Wallet created successfully");
 
-        // Wait a bit to ensure the wallet is fully processed on Circle's side
+        // Waiting to ensure the wallet is fully processed on Circle's side
         await new Promise((resolve) => setTimeout(resolve, 5000));
 
         try {
@@ -75,9 +75,11 @@ export const handleCreateWallet = async (): Promise<WalletInfo | null> => {
   }
 };
 
-const getWalletInfo = async (userToken: string): Promise<WalletInfo | null> => {
+export const getWalletInfo = async (
+  userToken: string
+): Promise<WalletInfo | null> => {
   try {
-    const response = await axios.get("http://localhost:3001/api/wallet-info", {
+    const response = await axios.get(`http://localhost:3001/api/wallet-info/`, {
       headers: {
         Authorization: `Bearer ${userToken}`,
       },

@@ -2,6 +2,7 @@ import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
 import "dotenv/config";
+import { v4 as uuidv4 } from "uuid";
 import walletRouter from "./routes/wallet.js";
 
 const app = express();
@@ -93,3 +94,50 @@ app.get("/api/wallet-info", async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+// Handle deposit transactions not sure if this is what we want. this isnt working currently
+
+// app.post("/api/transfer-usdc", async (req, res) => {
+//   const { userToken, destinationAddress, amount, walletId } = req.body;
+
+//   if (!userToken || !destinationAddress || !amount || !walletId) {
+//     return res.status(400).json({ error: "Missing required fields" });
+//   }
+
+//   const idempotencyKey = uuidv4();
+
+//   const transferUrl =
+//     "https://api.circle.com/v1/w3s/user/transactions/transfer";
+
+//   const options = {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Bearer ${process.env.API_KEY}`,
+//       "X-User-Token": userToken,
+//     },
+//     body: JSON.stringify({
+//       idempotencyKey: idempotencyKey,
+//       userId: `${process.env.USER_ID}`,
+//       destinationAddress: destinationAddress,
+//       amounts: [amount],
+//       feeLevel: "HIGH",
+//       tokenId: `${process.env.USDC_TOKEN_ID}`,
+//       walletId: walletId,
+//     }),
+//   };
+
+//   try {
+//     const response = await fetch(transferUrl, options);
+//     const data = await response.json();
+
+//     if (!response.ok) {
+//       throw new Error(data.error || "Error during transaction");
+//     }
+
+//     res.json(data);
+//   } catch (error) {
+//     console.error("Error processing transaction:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// });

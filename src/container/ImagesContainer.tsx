@@ -2,32 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Badge } from "react-bootstrap";
 import styled, { keyframes, css } from "styled-components";
 import wallet from "../assets/img/wallet.png";
-import piggybank from "../assets/img/piggybank.png";
 import faucet from "../assets/img/faucet.png";
-
-const wiggle = keyframes`
-  0% { transform: rotate(-1deg); }
-  50% { transform: rotate(1deg); }
-  100% { transform: rotate(-1deg); }
-`;
-
-const PiggybankImage = styled.img<{ $animate: boolean }>`
-  height: 5rem;
-  margin: 0 0.5rem;
-  transition: transform 0.3s ease;
-  ${({ $animate }) =>
-    $animate
-      ? css`
-          animation: ${wiggle} 1s ease;
-        `
-      : css`
-          animation: none;
-        `}
-  &:hover {
-    cursor: pointer;
-    transform: scale(1.2);
-  }
-`;
+import PiggybankContainer from "./PiggybankContainer";
 
 const Image = styled.img`
   height: 5rem;
@@ -68,13 +44,6 @@ const ClaimButton = styled.button`
   }
 `;
 
-const PiggybankContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0 0.5rem;
-`;
-
 interface ImagesContainerProps {
   onWalletClick: () => void;
   badgeValue: number;
@@ -107,16 +76,11 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({
               alt="Wallet"
               onClick={onWalletClick}
             />
-            <PiggybankContainer>
-              <PiggybankImage
-                src={piggybank}
-                alt="Piggybank"
-                $animate={animate}
-              />
-              <h6>
-                <Badge bg="primary">{badgeValue} USDC</Badge>
-              </h6>
-            </PiggybankContainer>
+            <PiggybankContainer
+              animate={animate}
+              badgeValue={badgeValue}
+            />
+
             <Image
               src={faucet}
               alt="Faucet"
