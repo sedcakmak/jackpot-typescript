@@ -1,6 +1,21 @@
 import express from "express";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import "dotenv/config";
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
 const router = express.Router();
 
@@ -95,6 +110,25 @@ router.post("/create-wallet", async (req, res) => {
     console.log("Initializing user account...");
     const initializeResult = await initializeUserAccount(userToken);
     console.log("User initialization result:", initializeResult);
+
+    //Store data in Firestore
+    try {
+      const initialWalletData = {
+        appId: process.env.APP_ID,
+        userId: createdUserId,
+        userToken: userToken,
+        encryptionKey: encryptionKey,
+        challengeId: initializeResult.data.challengeId,
+        createdAt: new Date().toISOString(),
+      };
+      await setDoc(doc(db, "wallets", userToken), initialWalletData);
+      console.log(
+        "Initial wallet data stored in Firestore for userId",
+        createdUserId
+      );
+    } catch (firestoreError) {
+      console.error("Error storing wallet data in Firestore:", firestoreError);
+    }
 
     // Return necessary information to the frontend
     res.json({

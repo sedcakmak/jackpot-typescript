@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export const checkBalance = async (id: string): Promise<number> => {
   console.log("Checking balance for id:", id);
   try {
@@ -20,3 +22,32 @@ export const checkBalance = async (id: string): Promise<number> => {
     return 0;
   }
 };
+
+//Transfer
+
+// export const initiateDeposit = async (
+//   walletId: string,
+//   amount: number
+// ): Promise<{ transactionId: string }> => {
+//   console.log("Initiating deposit:", { walletId, amount });
+//   try {
+//     const response = await axios.post(
+//       "http://localhost:3001/api/transfer-usdc",
+//       {
+//         walletId,
+//         amount: amount.toString(),
+//       }
+//     );
+
+//     console.log("Deposit response:", response.data);
+
+//     if (response.status !== 200) {
+//       throw new Error("Error initiating deposit from backend");
+//     }
+
+//     return { transactionId: response.data.transactionId };
+//   } catch (error) {
+//     console.error("Error initiating deposit:", error);
+//     throw error;
+//   }
+// };
