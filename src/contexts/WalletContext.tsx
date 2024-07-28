@@ -46,7 +46,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
     if (newWalletInfo && newWalletInfo.userId) {
       const updateFirestore = async () => {
         try {
-          const walletRef = doc(db, "wallets", newWalletInfo.userId);
+          const walletRef = doc(db, "wallets", newWalletInfo.userToken);
 
           await updateDoc(walletRef, {
             walletAddress: newWalletInfo.address,

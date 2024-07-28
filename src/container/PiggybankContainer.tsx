@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import styled, { keyframes, css } from "styled-components";
-import { Badge, Button, Modal } from "react-bootstrap";
+import { Badge, Button, Modal, Form } from "react-bootstrap";
 import piggybank from "../assets/img/piggybank.png";
 import { checkBalance } from "../api/wallet";
 import axios from "axios";
 import { useWallet } from "../contexts/WalletContext";
+import { firestore } from "../firebaseConfig"; // Assuming you have configured Firestore
 
 const wiggle = keyframes`
   0% { transform: rotate(-1deg); }
@@ -56,6 +57,61 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [modalMessage, setModalMessage] = useState<string>("");
   const { newWalletInfo, setNewWalletInfo } = useWallet();
+  const [walletId, setWalletId] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // Step 1: Search Firestore for the Wallet ID
+      const walletsRef = firestore.collection("wallets");
+      const querySnapshot = await walletsRef
+        .where("walletId", "==", walletId)
+        .get();
+
+      if (querySnapshot.empty) {
+        setError("No matching wallet found in the database.");
+        return;
+      }
+
+      // Assuming there's only one matching document
+      const walletDoc = querySnapshot.docs[0];
+      const walletData = walletDoc.data();
+      console.log("WALLET DATA FROM FIRESTORE" + walletData, walletDoc);
+      // const { userToken, userId, destinationAddress, tokenId } = walletData;
+
+      console.log("Wallet Data from Firestore:", walletData);
+
+      // Step 2: Initiate the transaction
+      // const options = {
+      //   method: "POST",
+      //   url: "https://api.circle.com/v1/w3s/user/transactions/transfer",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer <YOUR_API_KEY>`,
+      //     "X-User-Token": userToken,
+      //   },
+      //   data: {
+      //     idempotencyKey: "<UNIQUE_UUID>", // Generate a unique UUID for this transaction
+      //     userId: userId,
+      //     destinationAddress: destinationAddress,
+      //     refId: "Deposit",
+      //     amounts: [amount],
+      //     feeLevel: "HIGH",
+      //     tokenId: tokenId,
+      //     walletId: walletId,
+      //   },
+      // };
+
+      // const response = await axios.request(options);
+      // console.log("Deposit successful:", response.data);
+
+      // setShowModal(false); // Close the modal on successful transaction
+    } catch (error) {
+      console.error("Error making deposit:", error);
+      setError("Failed to make deposit. Please try again.");
+    }
+  };
 
   useEffect(() => {
     console.log("PiggybankContainer useEffect triggered");
@@ -64,11 +120,13 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
     const fetchBalance = async () => {
       if (newWalletInfo) {
         try {
-          console.log("Fetching balance for wallet:", newWalletInfo.id);
           const currentBalance = await checkBalance(newWalletInfo.id);
-          console.log("Fetched balance:", currentBalance);
           setBalance(currentBalance);
-          setModalMessage(`Your current balance is ${currentBalance} USDC.`);
+          setModalMessage(
+            currentBalance >= 0.5
+              ? `You have ${currentBalance} USDC in your wallet. How much do you want to deposit?`
+              : `You have ${currentBalance} USDC in your wallet. Please visit the faucet to deposit some USDC into your wallet.`
+          );
         } catch (err) {
           console.error("Error fetching balance:", err);
           setError("Error fetching balance. Please try again.");
@@ -155,7 +213,33 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
               </p>
             </BalanceInfo>
           ) : (
-            <p>Wallet information not available. newWalletInfo is null</p>
+            <Form onSubmit={handleSubmit}>
+              <Form.Group controlId="formWalletId">
+                <Form.Label>Wallet ID</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter Wallet ID"
+                  value={walletId}
+                  onChange={(e) => setWalletId(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group controlId="formAmount">
+                <Form.Label>Amount to Deposit</Form.Label>
+                <Form.Control
+                  type="number"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </Form.Group>
+              <Button
+                variant="primary"
+                type="submit"
+                style={{ marginTop: "10px" }}
+              >
+                Submit
+              </Button>
+            </Form>
           )}
           <Button
             variant="primary"
