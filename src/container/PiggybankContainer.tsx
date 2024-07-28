@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styled, { keyframes, css } from "styled-components";
 import { Badge, Button, Modal, Form } from "react-bootstrap";
 import piggybank from "../assets/img/piggybank.png";
 import { checkBalance } from "../api/wallet";
-import axios from "axios";
-import { useWallet } from "../contexts/WalletContext";
-import { firestore } from "../firebaseConfig"; // Assuming you have configured Firestore
+import { db, collection, getDocs, query, where } from "../firebaseConfig";
+import { transferUSDC } from "../services/transferUSDC";
 
 const wiggle = keyframes`
   0% { transform: rotate(-1deg); }
@@ -56,121 +55,73 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
   const [balance, setBalance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modalMessage, setModalMessage] = useState<string>("");
-  const { newWalletInfo, setNewWalletInfo } = useWallet();
-  const [walletId, setWalletId] = useState<string>("");
+  const [walletAddress, setWalletAddress] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
+  const [showTransactionButton, setShowTransactionButton] =
+    useState<boolean>(false);
+  const [walletData, setWalletData] = useState<any>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Step 1: Search Firestore for the Wallet ID
-      const walletsRef = firestore.collection("wallets");
-      const querySnapshot = await walletsRef
-        .where("walletId", "==", walletId)
-        .get();
+      // Step 1: Search Firestore for the Wallet Address
+      const walletsRef = collection(db, "wallets");
+      const q = query(walletsRef, where("walletAddress", "==", walletAddress));
+      const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
         setError("No matching wallet found in the database.");
         return;
       }
-
       // Assuming there's only one matching document
       const walletDoc = querySnapshot.docs[0];
       const walletData = walletDoc.data();
-      console.log("WALLET DATA FROM FIRESTORE" + walletData, walletDoc);
-      // const { userToken, userId, destinationAddress, tokenId } = walletData;
+      setWalletData(walletData);
+      console.log("WALLET DATA FROM FIRESTORE", walletData);
 
-      console.log("Wallet Data from Firestore:", walletData);
+      await makeDeposit(walletData);
 
-      // Step 2: Initiate the transaction
-      // const options = {
-      //   method: "POST",
-      //   url: "https://api.circle.com/v1/w3s/user/transactions/transfer",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer <YOUR_API_KEY>`,
-      //     "X-User-Token": userToken,
-      //   },
-      //   data: {
-      //     idempotencyKey: "<UNIQUE_UUID>", // Generate a unique UUID for this transaction
-      //     userId: userId,
-      //     destinationAddress: destinationAddress,
-      //     refId: "Deposit",
-      //     amounts: [amount],
-      //     feeLevel: "HIGH",
-      //     tokenId: tokenId,
-      //     walletId: walletId,
-      //   },
-      // };
-
-      // const response = await axios.request(options);
-      // console.log("Deposit successful:", response.data);
-
-      // setShowModal(false); // Close the modal on successful transaction
+      setShowTransactionButton(true);
+      await fetchBalance(walletData.walletId);
     } catch (error) {
       console.error("Error making deposit:", error);
       setError("Failed to make deposit. Please try again.");
     }
   };
 
-  useEffect(() => {
-    console.log("PiggybankContainer useEffect triggered");
-    console.log("newWalletInfo in PiggybankContainer:", newWalletInfo);
+  const fetchBalance = async (walletId: string) => {
+    try {
+      const currentBalance = await checkBalance(walletId);
+      setBalance(currentBalance);
+      setModalMessage(
+        currentBalance >= 0.5
+          ? `You have ${currentBalance} USDC in your wallet. How much do you want to deposit?`
+          : `You have ${currentBalance} USDC in your wallet. Please visit the faucet to deposit some USDC into your wallet.`
+      );
+    } catch (err) {
+      console.error("Error fetching balance:", err);
+      setError("Error fetching balance. Please try again.");
+    }
+  };
 
-    const fetchBalance = async () => {
-      if (newWalletInfo) {
-        try {
-          const currentBalance = await checkBalance(newWalletInfo.id);
-          setBalance(currentBalance);
-          setModalMessage(
-            currentBalance >= 0.5
-              ? `You have ${currentBalance} USDC in your wallet. How much do you want to deposit?`
-              : `You have ${currentBalance} USDC in your wallet. Please visit the faucet to deposit some USDC into your wallet.`
-          );
-        } catch (err) {
-          console.error("Error fetching balance:", err);
-          setError("Error fetching balance. Please try again.");
-        }
-      } else {
-        console.log("No wallet info available, cannot fetch balance");
-      }
-    };
-
-    fetchBalance();
-  }, [newWalletInfo]);
-
-  const displayPiggybankModal = async () => {
+  const displayPiggybankModal = () => {
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setError(null);
+    setWalletAddress("");
+    setAmount("");
+    setShowTransactionButton(false);
+    setModalMessage("");
+    setWalletData(null);
   };
 
-  const makeDeposit = async () => {
+  const makeDeposit = async (walletData: any) => {
     try {
-      console.log("makeDeposit working");
-      // Fetch wallet info from your backend
-      const walletInfoResponse = await axios.get("/api/wallet-info", {
-        headers: {
-          Authorization: `Bearer ${newWalletInfo?.userToken}`, // Provide the necessary authorization header
-        },
-      });
-
-      const { userToken, id: walletId, userId } = walletInfoResponse.data;
-
-      const amount = 1; // Define the amount to be transferred
-
-      // Make the deposit request
-      const response = await axios.post("/api/transfer-usdc", {
-        userToken,
-        walletId,
-        amount,
-        userId,
-      });
-
-      console.log("Deposit successful:", response.data);
+      await transferUSDC(walletData.walletAddress, amount);
+      console.log("Deposit successful");
     } catch (error) {
       console.error("Error making deposit:", error);
       setError("Failed to make deposit. Please try again.");
@@ -198,15 +149,15 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
         <Modal.Body>
           {error && <p style={{ color: "red" }}>{error}</p>}
           <p>{modalMessage}</p>
-          {newWalletInfo ? (
+          {walletData ? (
             <BalanceInfo>
-              <p>Wallet ID: {newWalletInfo.id}</p>
-              <p>Wallet Address: {newWalletInfo.address}</p>
+              <p>Wallet ID: {walletData.walletId}</p>
+              <p>Wallet Address: {walletData.walletAddress}</p>
               <p>
-                User Token: <strong>{newWalletInfo.userToken}</strong>
+                User Token: <strong>{walletData.userToken}</strong>
               </p>
               <p>
-                Challenge Id: <strong>{newWalletInfo.challengeId}</strong>
+                Challenge Id: <strong>{walletData.challengeId}</strong>
               </p>
               <p>
                 Balance: {balance !== null ? `${balance} USDC` : "Loading..."}
@@ -215,46 +166,43 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
           ) : (
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formWalletId">
-                <Form.Label>Wallet ID</Form.Label>
+                <Form.Label>Wallet Address</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter Wallet ID"
-                  value={walletId}
-                  onChange={(e) => setWalletId(e.target.value)}
+                  placeholder="Enter Wallet Address"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
                 />
+                <Button
+                  variant="primary"
+                  type="submit"
+                  style={{ marginTop: "10px" }}
+                >
+                  Submit
+                </Button>
               </Form.Group>
-              <Form.Group controlId="formAmount">
-                <Form.Label>Amount to Deposit</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </Form.Group>
-              <Button
-                variant="primary"
-                type="submit"
-                style={{ marginTop: "10px" }}
-              >
-                Submit
-              </Button>
+              {showTransactionButton && (
+                <>
+                  <Form.Group controlId="formAmount">
+                    <Form.Label>Amount to Deposit</Form.Label>
+                    <Form.Control
+                      type="number"
+                      placeholder="Enter amount"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                    />
+                  </Form.Group>
+                  <Button
+                    variant="success"
+                    style={{ marginTop: "10px" }}
+                    onClick={() => makeDeposit(walletData)}
+                  >
+                    Make Transaction
+                  </Button>
+                </>
+              )}
             </Form>
           )}
-          <Button
-            variant="primary"
-            onClick={makeDeposit}
-            disabled={!newWalletInfo}
-          >
-            Make Deposit
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleCloseModal}
-            style={{ marginLeft: "0.5rem" }}
-          >
-            Close
-          </Button>
         </Modal.Body>
       </Modal>
     </Container>
