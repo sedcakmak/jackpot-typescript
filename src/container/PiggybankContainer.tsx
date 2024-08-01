@@ -4,7 +4,7 @@ import { Badge, Button, Modal, Form } from "react-bootstrap";
 import piggybank from "../assets/img/piggybank.png";
 import { checkBalance } from "../api/wallet";
 import { db, collection, getDocs, query, where } from "../firebaseConfig";
-import { transferUSDC } from "../services/transferUSDC";
+import { transferUSDC } from "../services/api";
 
 const wiggle = keyframes`
   0% { transform: rotate(-1deg); }
@@ -119,8 +119,16 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
   };
 
   const makeDeposit = async (walletData: any) => {
+    console.log("makeDeposit called with walletData:", walletData);
+
     try {
-      await transferUSDC(walletData.walletAddress, amount);
+      console.log("Attempting USDC transfer");
+
+      await transferUSDC(
+        walletData.walletAddress,
+        amount,
+        walletData.userToken
+      );
       console.log("Deposit successful");
     } catch (error) {
       console.error("Error making deposit:", error);

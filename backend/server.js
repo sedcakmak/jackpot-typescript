@@ -4,11 +4,12 @@ import cors from "cors";
 import "dotenv/config";
 import { v4 as uuidv4 } from "uuid";
 import walletRouter from "./routes/wallet.js";
+import { transferUSDC } from "./services/transferUSDC.js";
 
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
 
 app.use("/api", walletRouter);
@@ -91,8 +92,39 @@ app.get("/api/wallet-info", async (req, res) => {
   }
 });
 
+app.post("/api/transfer-usdc", async (req, res) => {
+  console.log("Received transfer request:", req.body);
+  console.log("Headers:", req.headers);
+  const { walletAddress, amount } = req.body;
+  const userToken = req.headers["x-user-token"];
+
+  console.log("Extracted data:", { walletAddress, amount, userToken });
+
+  if (!userToken) {
+    return res.status(400).json({ error: "User token is missing" });
+  }
+
+  try {
+    console.log("About to call transferUSDC function");
+
+    const result = await transferUSDC(walletAddress, amount, userToken);
+    console.log("Transfer result:", result);
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error transferring USDC:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  console.log("Available routes:");
+  app._router.stack.forEach(function (r) {
+    if (r.route && r.route.path) {
+      console.log(r.route.path);
+    }
+  });
 });
 
 // Handle deposit transactions not sure if this is what we want. this isnt working currently
