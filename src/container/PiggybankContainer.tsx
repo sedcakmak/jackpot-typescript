@@ -125,9 +125,9 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
       console.log("Attempting USDC transfer");
 
       await transferUSDC(
-        walletData.walletAddress,
-        amount,
-        walletData.userToken
+        walletData.walletAddress
+        // amount,
+        //  walletData.userToken
       );
       console.log("Deposit successful");
     } catch (error) {

@@ -5,8 +5,7 @@ import newWallet from "../assets/img/new_wallet.png";
 import oldWallet from "../assets/img/old_wallet.png";
 import polygonLogo from "../assets/img/polygon_logo.png";
 import { checkBalance } from "../api/wallet";
-import { handleCreateWallet } from "./CreateWallet";
-import axios from "axios";
+import { handleCreateWallet, WalletInfo } from "../services/walletUtils";
 import { useWallet } from "../contexts/WalletContext";
 
 const Logo = styled.img`
@@ -35,13 +34,6 @@ const WalletImage = styled.img`
     transform: scale(1.2);
   }
 `;
-
-// interface NewWalletInfo {
-//   address: string;
-//   id: string;
-//   userToken: string;
-//   challengeId: string;
-// }
 
 const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
   show,
@@ -92,31 +84,24 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
   };
 
   const handleCreateNewWallet = async () => {
-    setLoading(true); // Initiate loading spinner
+    if (loading) return;
+    setLoading(true);
     try {
-      const walletResponse = await axios.post(
-        "http://localhost:3001/api/create-wallet"
-      );
-
       const walletInfo = await handleCreateWallet();
       if (walletInfo) {
-        const { userToken, challengeId, userId } = walletResponse.data; // Access the userToken from the response
         console.log("New wallet created:", walletInfo);
 
         setNewWalletInfo({
           address: walletInfo.address,
           id: walletInfo.id,
-          userToken,
-          challengeId,
-          userId,
+          userToken: walletInfo.userToken,
+          challengeId: walletInfo.challengeId,
+          userId: walletInfo.userId,
         });
         setStep("newWalletCreated");
-        console.log("newWalletInfo set in WalletModal:", {
-          address: walletInfo.address,
-          id: walletInfo.id,
-          userToken,
-          challengeId,
-        });
+        console.log("newWalletInfo set in WalletModal:", walletInfo);
+      } else {
+        throw new Error("Failed to create wallet.");
       }
     } catch (error) {
       console.error("Failed to create wallet:", error);
@@ -158,7 +143,6 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
       setUcwId("");
       setBalance(null);
       setError(null);
-      // setNewWalletInfo(null);
       setLoading(false);
     }
   }, [show]);

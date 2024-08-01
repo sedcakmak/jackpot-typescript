@@ -3,20 +3,19 @@ import axios from "axios";
 const API_BASE_URL = "http://localhost:3001";
 
 export const transferUSDC = async (
-  walletAddress: string,
-  amount: string,
-  userToken: string
+  walletAddress: string
+  //amount: string,
 ) => {
   console.log("Initiating USDC transfer from frontend");
-  console.log("Transfer details:", { walletAddress, amount, userToken });
+  console.log("Transfer details:", { walletAddress });
   try {
     const response = await axios.post(
       `${API_BASE_URL}/api/transfer-usdc`,
-      { walletAddress, amount },
+      { walletAddress },
       {
         headers: {
           "Content-Type": "application/json",
-          "X-User-Token": userToken,
+          // "X-User-Token": userToken,
         },
       }
     );

@@ -2,7 +2,13 @@ import { initializeApp, getApps } from "firebase/app";
 import {
   getFirestore,
   collection,
+  addDoc,
+  setDoc,
+  doc,
+  updateDoc,
+  getDoc,
   getDocs,
+  increment,
   query,
   where,
 } from "firebase/firestore";
@@ -39,4 +45,17 @@ try {
   console.error("Error initializing Firebase:", error);
 }
 
-export { db, collection, getDocs, query, where };
+export {
+  db,
+  app,
+  collection,
+  addDoc,
+  setDoc,
+  doc,
+  updateDoc,
+  getDoc,
+  getDocs,
+  increment,
+  query,
+  where,
+};
