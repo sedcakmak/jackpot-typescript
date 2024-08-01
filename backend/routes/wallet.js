@@ -209,13 +209,41 @@ router.get("/wallet-info", async (req, res) => {
   }
 });
 
+// Check Balance
+
+router.get("/check-balance/:id", async (req, res) => {
+  const walletId = req.params.id;
+
+  try {
+    // Make a GET request to the Circle API to retrieve the balance of the wallet
+    const response = await axios.get(
+      `https://api.circle.com/v1/w3s/wallets/${walletId}/balances`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Extract the balance from the response
+    const balance = response.data.data;
+    console.log("Wallet Balance:", balance);
+
+    // Respond with the balance data
+    res.json(balance);
+  } catch (error) {
+    console.error("Error checking balance:", error);
+    res.status(500).json({ error: "Failed to check balance" });
+  }
+});
+
 router.post("/transfer-usdc", async (req, res) => {
   console.log("Received transfer request:", req.body);
 
-  const { walletAddress } = req.body;
-  console.log("Extracted data:", { walletAddress });
-
   try {
+    const { walletAddress } = req.body;
+    console.log("Extracted data:", { walletAddress });
     const result = await transferUSDC(walletAddress);
     console.log("Transfer result:", result);
 

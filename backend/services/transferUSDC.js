@@ -26,15 +26,15 @@ const acquireSessionToken = async (userId) => {
   const data = await response.json();
   console.log("New session token acquired:", data.data);
 
-  return data.data;
+  return {
+    userToken: data.data.userToken,
+    encryptionKey: data.data.encryptionKey,
+  };
 };
 
 export const transferUSDC = async (walletAddress) => {
   console.log("TRANSFERUSDC WORKING");
   console.log("Params:", { walletAddress });
-  // export const transferUSDC = async (walletAddress, amount, userToken) => {
-  //   console.log("TRANSFERUSDC WORKING");
-  //   console.log("Params:", { walletAddress, amount, userToken });
 
   // Step 1: Search Firestore for the Wallet Address
   const walletsRef = collection(db, "wallets");
@@ -60,8 +60,22 @@ export const transferUSDC = async (walletAddress) => {
 
   try {
     const idempotencyKey = uuidv4();
-    const { userToken: newUserToken } = await acquireSessionToken(userId);
+    const { userToken: newUserToken, encryptionKey: newEncryptionKey } =
+      await acquireSessionToken(userId);
     const url = "https://api.circle.com/v1/w3s/user/transactions/transfer";
+
+    const requestBody = {
+      idempotencyKey: idempotencyKey,
+      userId: userId,
+      destinationAddress: process.env.ADDRESS_R,
+      refId: "",
+      amounts: ["0.1"],
+      feeLevel: "HIGH",
+      tokenId: process.env.USDC_TOKEN_ID,
+      walletId: walletId,
+    };
+
+    console.log("Transfer request body:", JSON.stringify(requestBody));
 
     const options = {
       method: "POST",
@@ -70,32 +84,41 @@ export const transferUSDC = async (walletAddress) => {
         Authorization: `Bearer ${process.env.API_KEY}`,
         "X-User-Token": newUserToken,
       },
-      body: JSON.stringify({
-        idempotencyKey: idempotencyKey,
-        userId: userId,
-        destinationAddress: walletAddress,
-        // destinationAddress: process.env.ADDRESS_R,
-        refId: "",
-        //  amounts: [amount],
-        amounts: ["0.1"],
-        feeLevel: "HIGH",
-        tokenId: process.env.USDC_TOKEN_ID,
-        walletId: walletId,
-      }),
+      body: JSON.stringify(requestBody),
     };
 
     const response = await fetch(url, options);
     const data = await response.json();
     console.log("Circle API response status:", response.status);
     console.log("Circle API response data:", data);
-    console.log("Attempting to transfer amount:");
 
     if (!response.ok) {
       throw new Error(data.message || "Transfer failed");
     }
 
-    console.log("Transfer successful:", data);
-    return data;
+    console.log("Transfer initiated:", data);
+
+    if (data.data && data.data.challengeId) {
+      console.log("Challenge received. ChallengeId:", data.data.challengeId);
+
+      // Here you would typically return the challengeId to the frontend
+      // where the Circle Web SDK would be used to complete the challenge
+      return {
+        status: "challenge_required",
+        challengeId: data.data.challengeId,
+        userToken: newUserToken,
+        encryptionKey: newEncryptionKey,
+      };
+    }
+    console.log(
+      "Sending back encryption key:",
+      newEncryptionKey || walletData.encryptionKey
+    );
+    // If no challenge is required (unlikely in this case)
+    return {
+      status: "success",
+      data: data,
+    };
   } catch (error) {
     console.error("Error:", error.message);
     throw error;

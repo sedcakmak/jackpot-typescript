@@ -6,6 +6,7 @@ import Instructions from "./components/Instructions";
 import ImagesContainer from "./container/ImagesContainer";
 import WalletModal from "./components/WalletModal";
 import { WalletProvider } from "./contexts/WalletContext";
+import TransferComponent from "./components/TransferComponent";
 
 const Page = styled.div`
   text-align: center;
@@ -58,6 +59,9 @@ const App: React.FC = () => {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [badgeValue, setBadgeValue] = useState(0);
 
+  const appId = process.env.REACT_APP_APP_ID;
+  const walletAddress = process.env.REACT_APP_ADDRESS_R;
+
   const handleClose = () => setShowInstructions(false);
   const handleShow = () => setShowInstructions(true);
   const handleWalletClose = () => setShowWalletModal(false);
@@ -67,6 +71,17 @@ const App: React.FC = () => {
     <WalletProvider>
       <Page>
         <Title>Quick Win</Title>
+        <div>
+          <h1>USDC TRANSFER</h1>
+          {appId && walletAddress ? (
+            <TransferComponent
+              appId={appId}
+              walletAddress={walletAddress}
+            />
+          ) : (
+            <p>Loading...</p>
+          )}
+        </div>
         <Container fluid>
           <Row>
             <Col

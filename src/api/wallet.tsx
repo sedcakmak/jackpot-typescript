@@ -12,7 +12,7 @@ export const checkBalance = async (id: string): Promise<number> => {
     const data = await response.json();
     console.log("Balance check response:", data);
 
-    const usdcToken = data.balance.tokenBalances.find(
+    const usdcToken = data.tokenBalances?.find(
       (token: { token: { symbol: string }; amount: string }) =>
         token.token.symbol === "USDC"
     );

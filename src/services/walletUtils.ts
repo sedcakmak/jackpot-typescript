@@ -10,6 +10,7 @@ export interface WalletInfo {
   userToken: string;
   challengeId: string;
   userId: string;
+  encryptionKey: string;
 }
 
 export const handleCreateWallet = async (): Promise<WalletInfo | null> => {
@@ -65,7 +66,17 @@ export const handleCreateWallet = async (): Promise<WalletInfo | null> => {
 
         try {
           const walletInfo = await getWalletInfo(userToken);
-          resolve(walletInfo);
+          if (walletInfo) {
+            resolve({
+              ...walletInfo,
+              userToken,
+              challengeId,
+              userId: response.data.userId,
+              encryptionKey,
+            });
+          } else {
+            reject(new Error("Failed to get wallet info"));
+          }
         } catch (walletInfoError) {
           console.error("Error fetching wallet info:", walletInfoError);
           reject(walletInfoError);
