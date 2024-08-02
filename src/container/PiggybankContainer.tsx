@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import styled, { keyframes, css } from "styled-components";
-import { Badge, Button, Modal, Form } from "react-bootstrap";
+import {
+  Badge,
+  Button,
+  Modal,
+  Form,
+  InputGroup as BootstrapInputGroup,
+} from "react-bootstrap";
+import { XCircle } from "react-bootstrap-icons";
 import piggybank from "../assets/img/piggybank.png";
 import { checkBalance } from "../api/wallet";
 import { db, collection, getDocs, query, where } from "../firebaseConfig";
@@ -43,6 +50,27 @@ const BalanceInfo = styled.div`
   text-align: center;
 `;
 
+const StyledInputGroup = styled(BootstrapInputGroup)`
+  position: relative;
+`;
+const ClearButton = styled.button`
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: #6c757d;
+  cursor: pointer;
+  z-index: 10;
+
+  &:hover {
+    color: #dc3545;
+  }
+`;
+
 interface PiggybankContainerProps {
   animate: boolean;
   badgeValue: number;
@@ -64,6 +92,9 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
   const [depositAmount, setDepositAmount] = useState<string | null>(null);
   const [sdk, setSDK] = useState<W3SSdk | null>(null);
 
+  const handleClearInput = () => {
+    setSourceWalletAddress("");
+  };
   useEffect(() => {
     const initSDK = new W3SSdk({
       appSettings: {
@@ -75,6 +106,9 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!sourceWalletAddress) {
+      return setError("Please enter a wallet address.");
+    }
     try {
       // Step 1: Search Firestore for the Wallet Address
       const walletsRef = collection(db, "wallets");
@@ -119,6 +153,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
 
   const displayPiggybankModal = () => {
     setShowModal(true);
+    setError(null);
   };
 
   const handleCloseModal = () => {
@@ -132,7 +167,18 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
   };
 
   const makeDeposit = async (walletData: any) => {
-    setShowModal(false);
+    //setShowModal(false);
+
+    // Step 1: Check if the amount is not null, not equal to 0, and below the balance
+    if (!amount || parseFloat(amount) === 0) {
+      setError("Please enter a valid deposit amount greater than 0.");
+      return;
+    }
+
+    if (balance !== null && parseFloat(amount) > balance) {
+      setError("The deposit amount cannot exceed your wallet balance.");
+      return;
+    }
 
     console.log("makeDeposit called with walletData:", walletData);
 
@@ -257,12 +303,17 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
                   Enter the <strong>wallet address</strong> from which you'll be
                   sending the tokens:
                 </Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter Wallet Address"
-                  value={sourceWalletAddress}
-                  onChange={(e) => setSourceWalletAddress(e.target.value)}
-                />
+                <StyledInputGroup>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter Wallet Address"
+                    value={sourceWalletAddress}
+                    onChange={(e) => setSourceWalletAddress(e.target.value)}
+                  />
+                  <ClearButton onClick={handleClearInput}>
+                    <XCircle />
+                  </ClearButton>
+                </StyledInputGroup>
                 <Button
                   variant="primary"
                   type="submit"

@@ -275,14 +275,24 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
               />
               <strong>Polygon PoS Amoy</strong> as your network!
             </p>
-            <Button
-              variant="primary"
-              href="https://faucet.circle.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Get USDC from Faucet
-            </Button>
+            <ButtonWrapper>
+              <Button
+                variant="primary"
+                href="https://faucet.circle.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Get USDC from Faucet
+              </Button>
+
+              <Button
+                variant="secondary"
+                onClick={handleClose}
+                style={{ marginTop: "10px" }}
+              >
+                Close
+              </Button>
+            </ButtonWrapper>
           </div>
         )}
       </Modal.Body>
