@@ -7,6 +7,8 @@ import {
   getDocs,
   query,
   where,
+  updateDoc,
+  doc,
 } from "../config/firebaseConfig.js";
 
 dotenv.config();
@@ -32,9 +34,17 @@ const acquireSessionToken = async (userId) => {
   };
 };
 
-export const transferUSDC = async (walletAddress) => {
+export const transferUSDC = async (walletAddress, amount) => {
   console.log("TRANSFERUSDC WORKING");
-  console.log("Params:", { walletAddress });
+  console.log("Params:", { walletAddress, amount });
+  console.log("Amount type:", typeof amount);
+  console.log("Amount value:", amount);
+
+  if (!walletAddress || amount === undefined || amount === null) {
+    throw new Error(
+      `Invalid walletAddress or amount.  WalletAddress: ${walletAddress}, Amount: ${amount}`
+    );
+  }
 
   // Step 1: Search Firestore for the Wallet Address
   const walletsRef = collection(db, "wallets");
@@ -69,7 +79,7 @@ export const transferUSDC = async (walletAddress) => {
       userId: userId,
       destinationAddress: process.env.ADDRESS_R,
       refId: "",
-      amounts: ["0.1"],
+      amounts: [amount.toString()],
       feeLevel: "HIGH",
       tokenId: process.env.USDC_TOKEN_ID,
       walletId: walletId,
@@ -103,6 +113,14 @@ export const transferUSDC = async (walletAddress) => {
 
       // Here you would typically return the challengeId to the frontend
       // where the Circle Web SDK would be used to complete the challenge
+
+      // Update Firestore with the new balance
+      // const newBalance =
+      //   parseFloat(walletData.balance || 0) + parseFloat(amount);
+      // await updateDoc(doc(db, "wallets", walletDoc.id), {
+      //   balance: newBalance,
+      // });
+
       return {
         status: "challenge_required",
         challengeId: data.data.challengeId,

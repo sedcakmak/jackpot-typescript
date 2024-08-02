@@ -1,4 +1,7 @@
-import axios from "axios";
+export interface WalletInfo {
+  walletId: string;
+  walletAddress: string;
+}
 
 export const checkBalance = async (id: string): Promise<number> => {
   console.log("Checking balance for id:", id);
@@ -23,31 +26,19 @@ export const checkBalance = async (id: string): Promise<number> => {
   }
 };
 
-//Transfer
-
-// export const initiateDeposit = async (
-//   walletId: string,
-//   amount: number
-// ): Promise<{ transactionId: string }> => {
-//   console.log("Initiating deposit:", { walletId, amount });
-//   try {
-//     const response = await axios.post(
-//       "http://localhost:3001/api/transfer-usdc",
-//       {
-//         walletId,
-//         amount: amount.toString(),
-//       }
-//     );
-
-//     console.log("Deposit response:", response.data);
-
-//     if (response.status !== 200) {
-//       throw new Error("Error initiating deposit from backend");
-//     }
-
-//     return { transactionId: response.data.transactionId };
-//   } catch (error) {
-//     console.error("Error initiating deposit:", error);
-//     throw error;
-//   }
-// };
+// Fetch the wallet information
+export const fetchCurrentWallet = async (): Promise<WalletInfo | null> => {
+  try {
+    const response = await fetch("/api/wallet/current-wallet");
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error("Failed to fetch wallet info");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching current wallet:", error);
+    return null;
+  }
+};

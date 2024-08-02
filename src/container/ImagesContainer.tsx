@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Badge } from "react-bootstrap";
-import styled, { keyframes, css } from "styled-components";
+import React, { useEffect, useState, useRef } from "react";
+import { Container, Row, Col } from "react-bootstrap";
+import styled from "styled-components";
 import wallet from "../assets/img/wallet.png";
 import faucet from "../assets/img/faucet.png";
 import PiggybankContainer from "./PiggybankContainer";
+import { useWallet } from "../contexts/WalletContext";
 
 const Image = styled.img`
   height: 5rem;
@@ -46,22 +47,22 @@ const ClaimButton = styled.button`
 
 interface ImagesContainerProps {
   onWalletClick: () => void;
-  badgeValue: number;
 }
 
-const ImagesContainer: React.FC<ImagesContainerProps> = ({
-  onWalletClick,
-  badgeValue,
-}) => {
+const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
   const [animate, setAnimate] = useState(false);
+  const { depositAmount } = useWallet();
+  const prevDepositAmountRef = useRef(depositAmount);
 
   useEffect(() => {
-    if (badgeValue > 0) {
+    if (depositAmount > prevDepositAmountRef.current) {
       setAnimate(true);
       const timer = setTimeout(() => setAnimate(false), 1000);
+      prevDepositAmountRef.current = depositAmount;
       return () => clearTimeout(timer);
     }
-  }, [badgeValue]);
+    prevDepositAmountRef.current = depositAmount;
+  }, [depositAmount]);
 
   return (
     <Container fluid>
@@ -76,10 +77,7 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({
               alt="Wallet"
               onClick={onWalletClick}
             />
-            <PiggybankContainer
-              animate={animate}
-              badgeValue={badgeValue}
-            />
+            <PiggybankContainer animate={animate} />
 
             <Image
               src={faucet}

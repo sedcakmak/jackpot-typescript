@@ -5,6 +5,7 @@ import { Container, Row, Col, Modal, Button } from "react-bootstrap";
 import { ReactComponent as USDCSvg } from "../assets/img/svg/usdc.svg";
 import Spinner from "./Spinner";
 import Sound from "../components/Sound";
+import { useWallet } from "../contexts/WalletContext";
 
 const scaleUpDown = keyframes`
   0% {
@@ -86,16 +87,16 @@ const MAX_PRIZE = 100;
 const CONSEC_PRIZE = 10;
 const NON_CONSEC_PRIZE = 1;
 
-const SlotMachine: React.FC<{
-  badgeValue: number;
-  setBadgeValue: React.Dispatch<React.SetStateAction<number>>;
-}> = ({ badgeValue, setBadgeValue }) => {
+const SlotMachine: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<"win" | "lose" | null>(null);
   const [prize, setPrize] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasSpun = useRef(false);
+
+  const { depositAmount, setDepositAmount, updateBalance, walletAddress } =
+    useWallet();
 
   useEffect(() => {
     if (isRunning) {
@@ -116,14 +117,20 @@ const SlotMachine: React.FC<{
     }
   }, [result, prize]);
 
+  useEffect(() => {
+    if (walletAddress) {
+      // You'll need to pass walletAddress to this component
+      updateBalance(walletAddress, depositAmount);
+    }
+  }, [depositAmount, walletAddress, updateBalance]);
+
   const handleStart = () => {
-    if (badgeValue < 0.5) {
+    if (depositAmount < 0.5) {
       setShowBadgeModal(true);
       return;
     }
 
-
-    setBadgeValue((prevValue) => prevValue - 0.5);
+    setDepositAmount((prevValue) => prevValue - 0.5);
 
     setIsRunning(true);
     setResult(null);
@@ -157,7 +164,7 @@ const SlotMachine: React.FC<{
     }
 
     setPrize(newPrize);
-    setBadgeValue((prevValue) => prevValue + newPrize);
+    setDepositAmount((prevValue) => prevValue + newPrize);
   };
 
   const handleModalClose = () => setShowBadgeModal(false);
@@ -185,7 +192,7 @@ const SlotMachine: React.FC<{
       </ButtonWrapper>
       <ResultText>
         {result === "win" && hasSpun.current && (
-          <> 
+          <>
             {prize === MAX_PRIZE && showConfetti && (
               <Confetti
                 width={window.innerWidth}
