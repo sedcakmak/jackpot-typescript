@@ -1,8 +1,3 @@
-export interface WalletInfo {
-  walletId: string;
-  walletAddress: string;
-}
-
 export const checkBalance = async (id: string): Promise<number> => {
   console.log("Checking balance for id:", id);
   try {
@@ -23,22 +18,5 @@ export const checkBalance = async (id: string): Promise<number> => {
   } catch (error) {
     console.error("Error checking balance:", error);
     return 0;
-  }
-};
-
-// Fetch the wallet information
-export const fetchCurrentWallet = async (): Promise<WalletInfo | null> => {
-  try {
-    const response = await fetch("/api/wallet/current-wallet");
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error("Failed to fetch wallet info");
-    }
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching current wallet:", error);
-    return null;
   }
 };

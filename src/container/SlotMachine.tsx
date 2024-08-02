@@ -6,6 +6,7 @@ import { ReactComponent as USDCSvg } from "../assets/img/svg/usdc.svg";
 import Spinner from "./Spinner";
 import Sound from "../components/Sound";
 import { useWallet } from "../contexts/WalletContext";
+import { WalletInfo } from "../services/walletUtils";
 
 const scaleUpDown = keyframes`
   0% {
@@ -95,7 +96,7 @@ const SlotMachine: React.FC = () => {
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasSpun = useRef(false);
 
-  const { depositAmount, setDepositAmount, updateBalance, walletAddress } =
+  const { depositAmount, setDepositAmount, updateBalance, walletInfo } =
     useWallet();
 
   useEffect(() => {
@@ -118,11 +119,11 @@ const SlotMachine: React.FC = () => {
   }, [result, prize]);
 
   useEffect(() => {
-    if (walletAddress) {
+    if (walletInfo && walletInfo.address) {
       // You'll need to pass walletAddress to this component
-      updateBalance(walletAddress, depositAmount);
+      updateBalance(walletInfo.address, depositAmount);
     }
-  }, [depositAmount, walletAddress, updateBalance]);
+  }, [depositAmount, walletInfo, updateBalance]);
 
   const handleStart = () => {
     if (depositAmount < 0.5) {

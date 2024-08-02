@@ -5,9 +5,8 @@ import newWallet from "../assets/img/new_wallet.png";
 import oldWallet from "../assets/img/old_wallet.png";
 import polygonLogo from "../assets/img/polygon_logo.png";
 import { checkBalance } from "../api/wallet";
-import { useWallet } from "../contexts/WalletContext";
-
-import { handleCreateWallet } from "../services/walletUtils";
+import { handleCreateWallet, WalletInfo } from "../services/walletUtils";
+import { db, doc, getDoc } from "../firebaseConfig";
 
 const Logo = styled.img`
   height: 1.2rem;
@@ -46,9 +45,14 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
   const [ucwId, setUcwId] = useState<string>("");
   const [balance, setBalance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(false); // Loading state for loading spinner
 
-  const { walletInfo, setWalletInfo } = useWallet();
+  useEffect(() => {
+    if (!show) {
+      console.log("WalletModal closed, walletInfo:", walletInfo);
+    }
+  }, [show, walletInfo]);
 
   const handleIdSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,11 +87,16 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
     setLoading(true);
     try {
       const createdWallet = await handleCreateWallet();
-      console.log("New wallet created:", createdWallet);
+      if (createdWallet && createdWallet.userToken) {
+        console.log("New wallet created:", createdWallet);
 
-      //  setWalletAddress(createdWallet.address); // Update the context
-      //  setWalletInfo(createdWallet);
-      setStep("newWalletCreated");
+        // Use the wallet info returned from handleCreateWallet
+        setWalletInfo(createdWallet);
+        setStep("newWalletCreated");
+        console.log("Wallet info set:", createdWallet);
+      } else {
+        throw new Error("Failed to create wallet.");
+      }
     } catch (error) {
       console.error("Failed to create wallet:", error);
       setError("Failed to create wallet. Please try again.");
@@ -252,11 +261,11 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
               your wallet, make transactions, and start playing the game.
             </p>
             <p>
-              Your wallet address: <strong>{walletInfo}</strong>
+              Your wallet address: <strong>{walletInfo.address}</strong>
             </p>
-            {/* <p>
+            <p>
               Wallet ID: <strong>{walletInfo.id}</strong>
-            </p> */}
+            </p>
             <p>
               Now, click the faucet below to get some USDC and get the game
               rolling! Make sure to select{" "}

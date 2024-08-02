@@ -3,7 +3,7 @@ import {
   updateFirestoreBalance,
   fetchFirestoreBalance,
 } from "../services/firebaseService";
-import { fetchCurrentWallet, WalletInfo } from "../api/wallet";
+import { handleCreateWallet, WalletInfo } from "../services/walletUtils";
 
 interface WalletContextType {
   depositAmount: number;
@@ -22,23 +22,19 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
 
   useEffect(() => {
-    const initializeWallet = async () => {
+    const fetchBalance = async (walletAddress: string) => {
       try {
-        const fetchedWalletInfo = await fetchCurrentWallet();
-        setWalletInfo(fetchedWalletInfo);
-        if (fetchedWalletInfo) {
-          const balance = await fetchFirestoreBalance(
-            fetchedWalletInfo.walletAddress
-          );
-          setDepositAmount(balance);
-        }
+        const balance = await fetchFirestoreBalance(walletAddress);
+        setDepositAmount(balance);
       } catch (error) {
-        console.error("Failed to initialize wallet:", error);
+        console.error("Failed to fetch balance from Firestore:", error);
       }
     };
 
-    initializeWallet();
-  }, []);
+    if (walletInfo?.address) {
+      fetchBalance(walletInfo.address);
+    }
+  }, [walletInfo]);
 
   // Update Balance in Firestore
   const updateBalance = async (walletAddress: string, newBalance: number) => {

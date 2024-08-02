@@ -90,8 +90,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
   const [walletData, setWalletData] = useState<any>(null);
   const [sdk, setSDK] = useState<W3SSdk | null>(null);
 
-  const { depositAmount, setDepositAmount, updateBalance, walletAddress } =
-    useWallet();
+  const { depositAmount, setDepositAmount, updateBalance } = useWallet();
 
   const handleClearInput = () => {
     setSourceWalletAddress("");
