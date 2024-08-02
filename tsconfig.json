@@ -17,5 +17,9 @@
     "jsx": "react-jsx",
     "downlevelIteration": true
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "backend/services/transferUSDC.js",
+    "src/firebaseConfig.ts"
+  ]
 }

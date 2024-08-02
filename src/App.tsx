@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import styled from "styled-components";
 import SlotMachine from "./container/SlotMachine";
 import Instructions from "./components/Instructions";
 import ImagesContainer from "./container/ImagesContainer";
 import WalletModal from "./components/WalletModal";
-import { WalletProvider, useWallet } from "./contexts/WalletContext";
+import { WalletProvider } from "./contexts/WalletContext";
 
 const Page = styled.div`
   text-align: center;
@@ -62,12 +62,6 @@ const App: React.FC = () => {
   const handleShow = () => setShowInstructions(true);
   const handleWalletClose = () => setShowWalletModal(false);
   const handleWalletShow = () => setShowWalletModal(true);
-
-  // const { newWalletInfo } = useWallet();
-
-  // useEffect(() => {
-  //   console.log("newWalletInfo in App:", newWalletInfo);
-  // }, [newWalletInfo]);
 
   return (
     <WalletProvider>

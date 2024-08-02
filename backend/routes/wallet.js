@@ -2,20 +2,21 @@ import express from "express";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "dotenv/config";
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { transferUSDC } from "../services/transferUSDC.js";
 
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
+import {
+  db,
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+  updateDoc,
+  getDoc,
+  getDocs,
+  increment,
+  query,
+  where,
+} from "../config/firebaseConfig.js";
 
 const router = express.Router();
 
@@ -73,7 +74,7 @@ const initializeUserAccount = async (userToken) => {
     );
     return initializeResponse.data;
   } catch (error) {
-    console.error("Error initializing user account:");
+    console.error("Error initializing user account:", error);
     if (error.response) {
       console.error("Response status:", error.response.status);
       console.error(
@@ -90,6 +91,7 @@ const initializeUserAccount = async (userToken) => {
 router.post("/create-wallet", async (req, res) => {
   try {
     // Step 1: Create a new user
+
     const userId = uuidv4();
     console.log("Generated userId:", userId);
 
@@ -101,6 +103,7 @@ router.post("/create-wallet", async (req, res) => {
       "Attempting to acquire session token for userId:",
       createdUserId
     );
+
     const { userToken, encryptionKey } = await acquireSessionToken(
       createdUserId
     );
@@ -111,7 +114,8 @@ router.post("/create-wallet", async (req, res) => {
     const initializeResult = await initializeUserAccount(userToken);
     console.log("User initialization result:", initializeResult);
 
-    //Store data in Firestore
+    // Store data in Firestore
+
     try {
       const initialWalletData = {
         appId: process.env.APP_ID,
@@ -131,6 +135,7 @@ router.post("/create-wallet", async (req, res) => {
     }
 
     // Return necessary information to the frontend
+
     res.json({
       appId: process.env.APP_ID,
       userId: createdUserId,
@@ -177,6 +182,17 @@ router.get("/wallet-info", async (req, res) => {
         createDate: latestWallet.createDate,
       });
 
+      // Update Firestore with id and address corresponding to the userId
+      const walletDocRef = doc(db, "wallets", userToken);
+      await updateDoc(walletDocRef, {
+        walletId: latestWallet.id,
+        walletAddress: latestWallet.address,
+      });
+      console.log(
+        "Updated Firestore with walletId and address for userToken",
+        userToken
+      );
+
       res.json({
         id: latestWallet.id,
         state: latestWallet.state,
@@ -190,6 +206,51 @@ router.get("/wallet-info", async (req, res) => {
   } catch (error) {
     console.error("Error fetching wallet info:", error);
     res.status(500).json({ error: "Failed to fetch wallet info" });
+  }
+});
+
+// Check Balance
+
+router.get("/check-balance/:id", async (req, res) => {
+  const walletId = req.params.id;
+
+  try {
+    // Make a GET request to the Circle API to retrieve the balance of the wallet
+    const response = await axios.get(
+      `https://api.circle.com/v1/w3s/wallets/${walletId}/balances`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Extract the balance from the response
+    const balance = response.data.data;
+    console.log("Wallet Balance:", balance);
+
+    // Respond with the balance data
+    res.json(balance);
+  } catch (error) {
+    console.error("Error checking balance:", error);
+    res.status(500).json({ error: "Failed to check balance" });
+  }
+});
+
+router.post("/transfer-usdc", async (req, res) => {
+  console.log("Received transfer request:", req.body);
+
+  try {
+    const { walletAddress } = req.body;
+    console.log("Extracted data:", { walletAddress });
+    const result = await transferUSDC(walletAddress);
+    console.log("Transfer result:", result);
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error transferring USDC:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 
