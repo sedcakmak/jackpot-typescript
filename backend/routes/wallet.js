@@ -3,22 +3,42 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "dotenv/config";
 import { transferUSDC } from "../services/transferUSDC.js";
-
 import {
   db,
-  collection,
-  addDoc,
   doc,
   setDoc,
   updateDoc,
   getDoc,
-  getDocs,
-  increment,
-  query,
-  where,
 } from "../config/firebaseConfig.js";
 
+import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
+
+const circleDeveloperSdk = initiateDeveloperControlledWalletsClient({
+  apiKey: process.env.API_KEY,
+  entitySecret: process.env.ENTITY_SECRET,
+});
+
+console.log(
+  "Api key: " +
+    process.env.API_KEY +
+    "entity secret BURDA :" +
+    process.env.ENTITY_SECRET
+);
+
 const router = express.Router();
+
+// Setup developer sdk
+
+// const circleDeveloperSdk = new Circle({
+//   apiKey: process.env.API_KEY,
+//   // baseUrl: pkg.CircleEnvironments.sandbox,veya 'https://api-sandbox.circle.com' // pkg.CircleEnvironments.production, for .production for live environment
+// });
+
+// console.log("SDK methods:", Object.keys(circleDeveloperSdk));
+
+// console.log("Circle SDK package:", pkg);
+// console.log("Circle class:", Circle);
+// console.log("Initialized SDK:", circleDeveloperSdk);
 
 const createUser = async (userId) => {
   const createUserResponse = await axios.post(
@@ -285,6 +305,91 @@ router.post("/transfer-usdc", async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error("Error transferring USDC:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Make Claim Transaction
+
+router.post("/claim", async (req, res) => {
+  console.log("Received claim request:", req.body);
+
+  try {
+    const { destinationAddress, depositAmount } = req.body;
+    console.log("Parsed values:", { destinationAddress, depositAmount });
+    console.log("Types:", {
+      destinationAddressType: typeof destinationAddress,
+      depositAmountType: typeof depositAmount,
+    });
+
+    console.log("Circle SDK:", circleDeveloperSdk);
+
+    if (!destinationAddress) {
+      return res.status(400).json({
+        error: `Invalid destinationAddress: ${destinationAddress}`,
+      });
+    }
+
+    const depositAmountNumber = Number(depositAmount);
+    if (isNaN(depositAmountNumber) || depositAmountNumber <= 0) {
+      return res.status(400).json({
+        error: `Invalid depositAmount: ${depositAmount}`,
+      });
+    }
+
+    if (!circleDeveloperSdk) {
+      console.error("Circle SDK is not initialized");
+      return res.status(500).json({
+        error: "Internal server error: SDK not initialized",
+      });
+    }
+
+    if (!circleDeveloperSdk) {
+      console.error(" is not available on the SDK");
+      return res.status(500).json({
+        error: "Internal server error: SDK method not available",
+      });
+    }
+
+    const sourceWalletId = process.env.SOURCE_WALLET_ID;
+    const usdcTokenId = process.env.USDC_TOKEN_ID;
+
+    if (!sourceWalletId || !usdcTokenId) {
+      return res.status(500).json({
+        error:
+          "SOURCE_WALLET_ID or USDC_TOKEN_ID not set in environment variables",
+      });
+    }
+
+    console.log("Attempting to create transaction with:", {
+      walletId: sourceWalletId,
+      tokenId: usdcTokenId,
+      destinationAddress,
+      amount: depositAmount.toString(),
+    });
+
+    const response = await circleDeveloperSdk.createTransaction({
+      walletId: sourceWalletId,
+      tokenId: usdcTokenId,
+      destinationAddress: destinationAddress,
+      amounts: [depositAmount.toString()],
+      fee: {
+        type: "level",
+        config: {
+          feeLevel: "MEDIUM",
+        },
+      },
+    });
+
+    console.log("Circle API response:", response);
+
+    if (response && response.data && response.data.id) {
+      res.json({ success: true, transactionId: response.data.id });
+    } else {
+      throw new Error("Unexpected response from Circle API");
+    }
+  } catch (error) {
+    console.error("Claim error:", error);
     res.status(500).json({ error: error.message });
   }
 });

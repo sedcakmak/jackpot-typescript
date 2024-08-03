@@ -20,6 +20,7 @@
   "include": [
     "src",
     "backend/services/transferUSDC.js",
-    "src/firebaseConfig.ts"
+    "src/firebaseConfig.ts",
+    "backend/services/claimUSDC.js"
   ]
 }

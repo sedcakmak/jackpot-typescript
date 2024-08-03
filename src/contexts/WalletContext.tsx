@@ -11,6 +11,8 @@ import {
 } from "../services/firebaseService";
 import { WalletInfo } from "../services/walletUtils";
 
+//import { transferTokens as transferTokensService } from "../services/tokenService";
+
 interface WalletContextType {
   depositAmount: number;
   setDepositAmount: React.Dispatch<React.SetStateAction<number>>;

@@ -70,13 +70,13 @@ const Instructions: React.FC<InstructionsProps> = ({ show, handleClose }) => (
         win:
         <br />
         <br />
-        <strong>Two-of-a-Kind Prize (1 USDC):</strong> Two matching images, not
+        <strong>Two-of-a-Kind Prize (0.25 USDC):</strong> Two matching images,
+        not next to each other.
+        <br />
+        <strong>Close Call Prize (1 USDC):</strong> Two matching images that are
         next to each other.
         <br />
-        <strong>Close Call Prize (10 USDC):</strong> Two matching images that
-        are next to each other.
-        <br />
-        <strong>Grand Prize (100 USDC):</strong> All three images match!
+        <strong>Grand Prize (5 USDC):</strong> All three images match!
         <br />
         <br />
         If you want to withdraw any leftover funds, just hit the
