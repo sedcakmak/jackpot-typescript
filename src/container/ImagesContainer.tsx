@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Container, Row, Col, Spinner } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import styled from "styled-components";
 import wallet from "../assets/img/wallet.png";
 import faucet from "../assets/img/faucet.png";
@@ -55,7 +55,6 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
   const [animate, setAnimate] = useState(false);
   const { depositAmount, setDepositAmount, walletAddress } = useWallet();
   const prevDepositAmountRef = useRef(depositAmount);
-  const [loading, setLoading] = useState<boolean>(false); // Loading state for loading spinner
 
   useEffect(() => {
     if (depositAmount > prevDepositAmountRef.current) {
@@ -72,9 +71,8 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
       try {
         const result = await claimUSDCService(walletAddress, depositAmount);
 
-        // Update Firestore balance to 0 after successful claim
+        // Update Firestore and local balance
         await updateFirestoreBalance(walletAddress, 0);
-        // Update DepositAmount to 0
         setDepositAmount(0);
         alert("Claim successful! Your wallet's balance has been updated.");
       } catch (error) {

@@ -190,16 +190,18 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
   };
 
   const makeDeposit = async (walletData: any) => {
-    setShowModal(false);
+    setLoading(true);
 
     // Step 1: Check if the amount is not null, not equal to 0, and below the balance
     if (!amount || parseFloat(amount) === 0) {
       setError("Please enter a valid deposit amount greater than 0.");
+      setLoading(false);
       return;
     }
 
     if (balance !== null && parseFloat(amount) > balance) {
       setError("The deposit amount cannot exceed your wallet balance.");
+      setLoading(false);
       return;
     }
 
@@ -221,6 +223,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
         if (!encryptionKey) {
           console.error("Missing encryption key");
           setError("Failed to initiate the challenge. Missing encryption key.");
+          setLoading(false);
           return;
         }
         sdk.setAuthentication({
@@ -229,6 +232,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
         });
 
         sdk.execute(result.challengeId, async (error, challengeResult) => {
+          setLoading(false);
           if (error) {
             console.error("Challenge execution error:", error);
             setError(`Failed to complete the challenge: ${error.message}`);
@@ -275,12 +279,8 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
                 setError("The challenge has expired. Please try again.");
                 break;
               case "in_progress":
-                //   console.log("Challenge is still in progress");
-                //  implement a polling mechanism or provide user feedback
                 break;
               case "pending":
-                // console.log("Challenge is pending");
-                // Handle pending state
                 break;
               default:
                 setError("Unexpected challenge status. Please try again.");
@@ -291,6 +291,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
     } catch (error) {
       console.error("Error making deposit:", error);
       setError("Failed to make deposit. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -307,70 +308,85 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
         <Badge bg="primary">{depositAmount} USDC</Badge>
       </h6>
       <Modal
-        show={showModal}
+        show={showModal || loading}
         onHide={handleCloseModal}
       >
         <Modal.Header closeButton>
           <Modal.Title>Piggybank</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          <p>{modalMessage}</p>
-          {walletData ? (
-            <BalanceInfo>
-              <Form.Group controlId="formAmount">
-                <Form.Label>
-                  <strong>Amount to Deposit:</strong>
-                </Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </Form.Group>
-              <ButtonWrapper>
-                <Button
-                  variant="success"
-                  onClick={() => makeDeposit(walletData)}
-                >
-                  Make Transaction
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={handleCloseModal}
-                >
-                  Close
-                </Button>
-              </ButtonWrapper>
-            </BalanceInfo>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <Spinner
+                animation="border"
+                variant="info"
+                role="status"
+              />
+              <p>
+                Depositing your funds into the Piggybank, please hold tight!
+              </p>
+            </div>
           ) : (
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="formWalletId">
-                <Form.Label>
-                  Enter the <strong>wallet address</strong> from which you'll be
-                  sending the tokens:
-                </Form.Label>
-                <StyledInputGroup>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter Wallet Address"
-                    value={sourceWalletAddress}
-                    onChange={(e) => setSourceWalletAddress(e.target.value)}
-                  />
-                  <ClearButton onClick={handleClearInput}>
-                    <XCircle />
-                  </ClearButton>
-                </StyledInputGroup>
-                <Button
-                  variant="primary"
-                  type="submit"
-                  style={{ marginTop: "10px" }}
-                >
-                  Submit
-                </Button>
-              </Form.Group>
-            </Form>
+            <>
+              {error && <p style={{ color: "red" }}>{error}</p>}
+              <p>{modalMessage}</p>
+              {walletData ? (
+                <BalanceInfo>
+                  <Form.Group controlId="formAmount">
+                    <Form.Label>
+                      <strong>Amount to Deposit:</strong>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      placeholder="Enter amount"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                    />
+                  </Form.Group>
+                  <ButtonWrapper>
+                    <Button
+                      variant="success"
+                      onClick={() => makeDeposit(walletData)}
+                    >
+                      Make Transaction
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={handleCloseModal}
+                    >
+                      Close
+                    </Button>
+                  </ButtonWrapper>
+                </BalanceInfo>
+              ) : (
+                <Form onSubmit={handleSubmit}>
+                  <Form.Group controlId="formWalletId">
+                    <Form.Label>
+                      Enter the <strong>wallet address</strong> from which
+                      you'll be sending the tokens:
+                    </Form.Label>
+                    <StyledInputGroup>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter Wallet Address"
+                        value={sourceWalletAddress}
+                        onChange={(e) => setSourceWalletAddress(e.target.value)}
+                      />
+                      <ClearButton onClick={handleClearInput}>
+                        <XCircle />
+                      </ClearButton>
+                    </StyledInputGroup>
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      style={{ marginTop: "10px" }}
+                    >
+                      Submit
+                    </Button>
+                  </Form.Group>
+                </Form>
+              )}
+            </>
           )}
         </Modal.Body>
       </Modal>
