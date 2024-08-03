@@ -68,20 +68,15 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
   }, [depositAmount]);
 
   const handleClaim = async () => {
-    console.log("Claiming with:", {
-      walletAddress,
-      depositAmount,
-    });
     if (walletAddress && depositAmount > 0) {
       try {
         const result = await claimUSDCService(walletAddress, depositAmount);
-        console.log("Claim successful:", result);
 
         // Update Firestore balance to 0 after successful claim
         await updateFirestoreBalance(walletAddress, 0);
         // Update DepositAmount to 0
         setDepositAmount(0);
-        alert("Claim successful! Your balance has been updated.");
+        alert("Claim successful! Your wallet's balance has been updated.");
       } catch (error) {
         console.error("Claim failed:", error);
         alert("Claim failed. Please try again.");
@@ -100,6 +95,7 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
             <Image
               src={wallet}
               alt="Wallet"
+              title="Create new wallet or check the balance"
               onClick={onWalletClick}
             />
             <PiggybankContainer animate={animate} />
@@ -107,6 +103,7 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
             <Image
               src={faucet}
               alt="Faucet"
+              title="Go to faucet to get some USDC tokens in your wallet"
               onClick={() =>
                 window.open("https://faucet.circle.com/", "_blank")
               }

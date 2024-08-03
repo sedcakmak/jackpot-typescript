@@ -5,6 +5,7 @@ import {
   Button,
   Modal,
   Form,
+  Spinner,
   InputGroup as BootstrapInputGroup,
 } from "react-bootstrap";
 import { XCircle } from "react-bootstrap-icons";
@@ -97,6 +98,8 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
   const [sdk, setSDK] = useState<W3SSdk | null>(null);
   const { setWalletAddress } = useWallet();
   const { depositAmount, setDepositAmount, updateBalance } = useWallet();
+  const [loading, setLoading] = useState<boolean>(false); // Loading state for loading spinner
+
   const depositAmountRef = useRef(depositAmount);
 
   const handleClearInput = () => {
@@ -113,7 +116,6 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
 
   useEffect(() => {
     depositAmountRef.current = depositAmount;
-    console.log("Deposit amount changed:", depositAmount);
   }, [depositAmount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -141,7 +143,6 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
       const walletDoc = querySnapshot.docs[0];
       const walletData = walletDoc.data();
       setWalletData(walletData);
-      console.log("WALLET DATA FROM FIRESTORE", walletData);
 
       await fetchBalance(walletData.walletId);
     } catch (error) {
@@ -155,26 +156,15 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
       const currentBalance = await checkBalance(walletId);
       setBalance(currentBalance);
 
-      console.log("Current Balance:", currentBalance);
-      console.log("Deposit Amount (ref):", depositAmountRef.current);
-
       if (currentBalance === 0 && depositAmountRef.current > 0.5) {
-        console.log(
-          "Condition met: currentBalance === 0 && depositAmount > 0.5"
-        );
-
         setModalMessage(
           `You have ${currentBalance} USDC in your wallet and ${depositAmountRef.current} USDC in your piggyBank. You can close this modal and play.`
         );
       } else if (currentBalance >= 0.5) {
-        console.log("Condition met: currentBalance >= 0.5");
-
         setModalMessage(
           `You have ${currentBalance} USDC in your wallet. How much do you want to deposit?`
         );
       } else {
-        console.log("No conditions met");
-
         setModalMessage(
           `You have ${currentBalance} USDC in your wallet. Please visit the faucet to deposit some USDC into your wallet.`
         );
@@ -202,9 +192,6 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
   const makeDeposit = async (walletData: any) => {
     setShowModal(false);
 
-    console.log("makeDeposit called with walletData:", walletData);
-    console.log("Amount to deposit:", amount);
-
     // Step 1: Check if the amount is not null, not equal to 0, and below the balance
     if (!amount || parseFloat(amount) === 0) {
       setError("Please enter a valid deposit amount greater than 0.");
@@ -217,10 +204,8 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
     }
 
     try {
-      console.log("Attempting USDC transfer");
-
+      // Depositing to Piggybank AKA transaction to dev-controlled wallet
       const result = await transferUSDC(walletData.walletAddress, amount);
-      console.log("Transfer result:", result);
 
       if (result.status !== "challenge_required") {
         throw new Error("Expected a challenge, but none was required.");
@@ -232,7 +217,6 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
 
       if (result.status === "challenge_required" && sdk) {
         const encryptionKey = result.encryptionKey || walletData.encryptionKey;
-        console.log("Using encryption key:", encryptionKey);
 
         if (!encryptionKey) {
           console.error("Missing encryption key");
@@ -251,12 +235,10 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
             return;
           }
           if (challengeResult) {
-            console.log(`Challenge: ${challengeResult}`);
-
             switch (challengeResult.status.toLowerCase()) {
               case "complete":
-                console.log("Deposit successful");
                 const depositAmountNumber = parseFloat(amount);
+                alert("Deposit successful!");
 
                 // Fetch the current balance from Firestore
                 const currentFirestoreBalance = await fetchFirestoreBalance(
@@ -267,8 +249,6 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
                 const newBalance =
                   currentFirestoreBalance + depositAmountNumber;
 
-                // const newBalance =
-                //   (balance !== null ? balance : 0) + depositAmountNumber;
                 try {
                   // Update local state
                   setDepositAmount(
@@ -295,18 +275,14 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
                 setError("The challenge has expired. Please try again.");
                 break;
               case "in_progress":
-                console.log("Challenge is still in progress");
-                // You might want to implement a polling mechanism or provide user feedback
+                //   console.log("Challenge is still in progress");
+                //  implement a polling mechanism or provide user feedback
                 break;
               case "pending":
-                console.log("Challenge is pending");
+                // console.log("Challenge is pending");
                 // Handle pending state
                 break;
               default:
-                console.log(
-                  "Unknown challenge status:",
-                  challengeResult.status
-                );
                 setError("Unexpected challenge status. Please try again.");
             }
           }
@@ -323,6 +299,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
       <PiggybankImage
         src={piggybank}
         alt="Piggybank"
+        title="Deposit to the Piggybank from your wallet"
         $animate={animate}
         onClick={displayPiggybankModal}
       />

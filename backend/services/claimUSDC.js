@@ -4,15 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
-export const claimUSDC = async (
-  destinationAddress,
-  amount
-  // userToken
-) => {
-  console.log("CLAIMUSDC WORKING");
-  console.log("Destination:", destinationAddress);
-  console.log("Amount:", amount);
-
+export const claimUSDC = async (destinationAddress, amount) => {
   if (
     !destinationAddress ||
     amount === undefined ||
@@ -36,28 +28,21 @@ export const claimUSDC = async (
       feeLevel: "MEDIUM",
     };
 
-    console.log("Claim request body:", JSON.stringify(requestBody, null, 2));
-
     const options = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.API_KEY}`,
-        // "X-User-Token": userToken,
       },
       body: JSON.stringify(requestBody),
     };
 
     const response = await fetch(url, options);
     const data = await response.json();
-    console.log("Circle API response status:", response.status);
-    console.log("Circle API response data:", JSON.stringify(data, null, 2));
 
     if (!response.ok) {
       throw new Error(JSON.stringify(data));
     }
-
-    console.log("Claim initiated:", data);
 
     return {
       status: "success",

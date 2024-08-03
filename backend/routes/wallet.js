@@ -18,27 +18,7 @@ const circleDeveloperSdk = initiateDeveloperControlledWalletsClient({
   entitySecret: process.env.ENTITY_SECRET,
 });
 
-console.log(
-  "Api key: " +
-    process.env.API_KEY +
-    "entity secret BURDA :" +
-    process.env.ENTITY_SECRET
-);
-
 const router = express.Router();
-
-// Setup developer sdk
-
-// const circleDeveloperSdk = new Circle({
-//   apiKey: process.env.API_KEY,
-//   // baseUrl: pkg.CircleEnvironments.sandbox,veya 'https://api-sandbox.circle.com' // pkg.CircleEnvironments.production, for .production for live environment
-// });
-
-// console.log("SDK methods:", Object.keys(circleDeveloperSdk));
-
-// console.log("Circle SDK package:", pkg);
-// console.log("Circle class:", Circle);
-// console.log("Initialized SDK:", circleDeveloperSdk);
 
 const createUser = async (userId) => {
   const createUserResponse = await axios.post(
@@ -88,10 +68,7 @@ const initializeUserAccount = async (userToken) => {
         },
       }
     );
-    console.log(
-      "Initialization response:",
-      JSON.stringify(initializeResponse.data, null, 2)
-    );
+
     return initializeResponse.data;
   } catch (error) {
     console.error("Error initializing user account:", error);
@@ -113,26 +90,16 @@ router.post("/create-wallet", async (req, res) => {
     // Step 1: Create a new user
 
     const userId = uuidv4();
-    console.log("Generated userId:", userId);
 
     const createdUserId = await createUser(userId);
-    console.log("Created userId:", createdUserId);
 
     // Step 2: Acquire a session token
-    console.log(
-      "Attempting to acquire session token for userId:",
-      createdUserId
-    );
-
     const { userToken, encryptionKey } = await acquireSessionToken(
       createdUserId
     );
-    console.log("Session token acquired:", { userToken, encryptionKey });
 
     // Step 3: Initialize the user account
-    console.log("Initializing user account...");
     const initializeResult = await initializeUserAccount(userToken);
-    console.log("User initialization result:", initializeResult);
 
     // Store data in Firestore
 
@@ -146,10 +113,6 @@ router.post("/create-wallet", async (req, res) => {
         createdAt: new Date().toISOString(),
       };
       await setDoc(doc(db, "wallets", userToken), initialWalletData);
-      console.log(
-        "Initial wallet data stored in Firestore for userId",
-        createdUserId
-      );
     } catch (firestoreError) {
       console.error("Error storing wallet data in Firestore:", firestoreError);
     }
@@ -193,25 +156,13 @@ router.get("/wallet-info", async (req, res) => {
     if (wallets && wallets.length > 0) {
       const latestWallet = wallets[0];
 
-      // Log the wallet information
-      console.log("Wallet Info:", {
-        id: latestWallet.id,
-        state: latestWallet.state,
-        address: latestWallet.address,
-        blockchain: latestWallet.blockchain,
-        createDate: latestWallet.createDate,
-      });
-
       // Update Firestore with id and address corresponding to the userId
+
       const walletDocRef = doc(db, "wallets", userToken);
       await updateDoc(walletDocRef, {
         walletId: latestWallet.id,
         walletAddress: latestWallet.address,
       });
-      console.log(
-        "Updated Firestore with walletId and address for userToken",
-        userToken
-      );
 
       res.json({
         id: latestWallet.id,
@@ -235,7 +186,6 @@ router.get("/check-balance/:id", async (req, res) => {
   const walletId = req.params.id;
 
   try {
-    // Make a GET request to the Circle API to retrieve the balance of the wallet
     const response = await axios.get(
       `https://api.circle.com/v1/w3s/wallets/${walletId}/balances`,
       {
@@ -246,11 +196,8 @@ router.get("/check-balance/:id", async (req, res) => {
       }
     );
 
-    // Extract the balance from the response
     const balance = response.data.data;
-    console.log("Wallet Balance:", balance);
 
-    // Respond with the balance data
     res.json(balance);
   } catch (error) {
     console.error("Error checking balance:", error);
@@ -289,18 +236,14 @@ router.get("/current-wallet", async (req, res) => {
 // Transfer
 
 router.post("/transfer-usdc", async (req, res) => {
-  console.log("Received transfer request:", req.body);
-
   try {
     const { walletAddress, amount } = req.body;
-    console.log("Extracted data:", { walletAddress, amount });
 
     if (!walletAddress || !amount) {
       throw new Error("Missing walletAddress or amount");
     }
 
     const result = await transferUSDC(walletAddress, amount);
-    console.log("Transfer result:", result);
 
     res.json(result);
   } catch (error) {
@@ -312,17 +255,8 @@ router.post("/transfer-usdc", async (req, res) => {
 // Make Claim Transaction
 
 router.post("/claim", async (req, res) => {
-  console.log("Received claim request:", req.body);
-
   try {
     const { destinationAddress, depositAmount } = req.body;
-    console.log("Parsed values:", { destinationAddress, depositAmount });
-    console.log("Types:", {
-      destinationAddressType: typeof destinationAddress,
-      depositAmountType: typeof depositAmount,
-    });
-
-    console.log("Circle SDK:", circleDeveloperSdk);
 
     if (!destinationAddress) {
       return res.status(400).json({
@@ -344,13 +278,6 @@ router.post("/claim", async (req, res) => {
       });
     }
 
-    if (!circleDeveloperSdk) {
-      console.error(" is not available on the SDK");
-      return res.status(500).json({
-        error: "Internal server error: SDK method not available",
-      });
-    }
-
     const sourceWalletId = process.env.SOURCE_WALLET_ID;
     const usdcTokenId = process.env.USDC_TOKEN_ID;
 
@@ -360,14 +287,6 @@ router.post("/claim", async (req, res) => {
           "SOURCE_WALLET_ID or USDC_TOKEN_ID not set in environment variables",
       });
     }
-
-    console.log("Attempting to create transaction with:", {
-      walletId: sourceWalletId,
-      tokenId: usdcTokenId,
-      destinationAddress,
-      amount: depositAmount.toString(),
-    });
-
     const response = await circleDeveloperSdk.createTransaction({
       walletId: sourceWalletId,
       tokenId: usdcTokenId,
@@ -380,8 +299,6 @@ router.post("/claim", async (req, res) => {
         },
       },
     });
-
-    console.log("Circle API response:", response);
 
     if (response && response.data && response.data.id) {
       res.json({ success: true, transactionId: response.data.id });

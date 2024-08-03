@@ -25,22 +25,17 @@ const firebaseConfig = {
   appId: process.env.FIREBASE_APP_ID,
 };
 
-console.log("Firebase Config:", JSON.stringify(firebaseConfig, null, 2));
-
 let app;
 let db;
 
 try {
   if (!getApps().length) {
     app = initializeApp(firebaseConfig, "BACKEND_APP");
-    console.log("Firebase app initialized successfully");
   } else {
     app = getApps()[0];
-    console.log("Using existing Firebase app");
   }
 
   db = getFirestore(app);
-  console.log("Firestore initialized successfully");
 } catch (error) {
   console.error("Error initializing Firebase:", error);
 }
