@@ -258,13 +258,10 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
             </p>
             <p>
               Please write down your wallet address, as it is necessary to fund
-              your wallet, make transactions, and start playing the game.
+              your wallet, deposit Piggybank, and start playing the game.
             </p>
             <p>
               Your wallet address: <strong>{walletInfo.address}</strong>
-            </p>
-            <p>
-              Wallet ID: <strong>{walletInfo.id}</strong>
             </p>
             <p>
               Now, click the faucet below to get some USDC and get the game
@@ -288,7 +285,6 @@ const WalletModal: React.FC<{ show: boolean; onClose: () => void }> = ({
               <Button
                 variant="secondary"
                 onClick={handleClose}
-                style={{ marginTop: "10px" }}
               >
                 Close
               </Button>

@@ -41,6 +41,14 @@ const PiggybankImage = styled.img<{ $animate: boolean }>`
   }
 `;
 
+const ButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+`;
+
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -50,7 +58,7 @@ const Container = styled.div`
 
 const BalanceInfo = styled.div`
   margin-top: 1rem;
-  text-align: center;
+  // text-align: center;
 `;
 
 const StyledInputGroup = styled(BootstrapInputGroup)`
@@ -334,7 +342,9 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
           {walletData ? (
             <BalanceInfo>
               <Form.Group controlId="formAmount">
-                <Form.Label>Amount to Deposit</Form.Label>
+                <Form.Label>
+                  <strong>Amount to Deposit:</strong>
+                </Form.Label>
                 <Form.Control
                   type="number"
                   placeholder="Enter amount"
@@ -342,16 +352,20 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
                   onChange={(e) => setAmount(e.target.value)}
                 />
               </Form.Group>
-              <Button
-                variant="success"
-                style={{ marginTop: "10px" }}
-                onClick={() => makeDeposit(walletData)}
-              >
-                Make Transaction
-              </Button>
-              <p>
-                Balance: {balance !== null ? `${balance} USDC` : "Loading..."}
-              </p>
+              <ButtonWrapper>
+                <Button
+                  variant="success"
+                  onClick={() => makeDeposit(walletData)}
+                >
+                  Make Transaction
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={handleCloseModal}
+                >
+                  Close
+                </Button>
+              </ButtonWrapper>
             </BalanceInfo>
           ) : (
             <Form onSubmit={handleSubmit}>

@@ -84,9 +84,10 @@ const Loser = styled.div`
   animation: ${scaleUpDown} 0.6s ease;
 `;
 
-const MAX_PRIZE = 100;
-const CONSEC_PRIZE = 10;
-const NON_CONSEC_PRIZE = 1;
+const MAX_PRIZE = 5;
+const CONSEC_PRIZE = 1;
+const NON_CONSEC_PRIZE = 0.25;
+const ENTRANCE_FEE = 0.5;
 
 const SlotMachine: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -123,13 +124,13 @@ const SlotMachine: React.FC = () => {
   };
 
   const handleStart = async () => {
-    if (depositAmount < 0.5) {
+    if (depositAmount < ENTRANCE_FEE) {
       setShowBadgeModal(true);
       return;
     }
 
     try {
-      const newBalance = depositAmount - 0.5;
+      const newBalance = depositAmount - ENTRANCE_FEE;
       if (walletAddress) {
         await updateBalance(walletAddress, newBalance);
       }
@@ -166,6 +167,8 @@ const SlotMachine: React.FC = () => {
       newPrize = NON_CONSEC_PRIZE;
     }
 
+    setPrize(newPrize);
+
     try {
       const updatedBalance = depositAmount + newPrize;
 
@@ -174,7 +177,6 @@ const SlotMachine: React.FC = () => {
       }
 
       setDepositAmount(updatedBalance);
-      setPrize(newPrize);
     } catch (error) {
       console.error("Error updating balance:", error);
       // Handle the error appropriately, maybe show an error message to the user
@@ -216,7 +218,7 @@ const SlotMachine: React.FC = () => {
             <Sound audio={prize === MAX_PRIZE ? "slotmachine" : "coin"} />
             <Winner>
               You win! Your prize: <StyledUSDCSvg />
-              {prize}.00
+              {prize}
             </Winner>
           </>
         )}
