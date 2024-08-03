@@ -1,4 +1,9 @@
 export const claimUSDCService = async (destinationAddress, depositAmount) => {
+  console.log("Initiating USDC claim with:", {
+    destinationAddress,
+    depositAmount,
+  });
+
   if (
     !destinationAddress ||
     depositAmount === undefined ||
@@ -29,6 +34,7 @@ export const claimUSDCService = async (destinationAddress, depositAmount) => {
     }
 
     const data = await response.json();
+    console.log("Claim response:", data);
 
     return {
       status: "success",

@@ -32,9 +32,16 @@ export const handleCreateWallet = async (): Promise<WalletInfo | null> => {
       encryptionKey,
     });
 
+    console.log("About to execute SDK challenge");
+
     return new Promise((resolve, reject) => {
       sdk.execute(challengeId, async (error: any, result: any) => {
         if (error) {
+          console.log(
+            `${error?.code?.toString() || "Unknown code"}: ${
+              error?.message ?? "Error!"
+            }`
+          );
           reject(error);
           return;
         }
@@ -44,6 +51,15 @@ export const handleCreateWallet = async (): Promise<WalletInfo | null> => {
           reject(new Error("No result returned"));
           return;
         }
+
+        console.log(`Challenge: ${result.type}`);
+        console.log(`Status: ${result.status}`);
+
+        if (result.data && result.data.signature) {
+          console.log(`Signature: ${result.data.signature}`);
+        }
+
+        console.log("Wallet created successfully");
 
         // Waiting to ensure the wallet is fully processed on Circle's side
         await new Promise((resolve) => setTimeout(resolve, 5000));

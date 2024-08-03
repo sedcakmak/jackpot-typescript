@@ -45,6 +45,7 @@ export const updateFirestoreBalance = async (
       await updateDoc(userTokenRef, {
         balance: newBalance.toString(),
       });
+      console.log("Firestore balance updated successfully");
     } else {
       throw new Error("No matching wallet found");
     }
