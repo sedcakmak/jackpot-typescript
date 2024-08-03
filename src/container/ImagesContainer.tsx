@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
 import styled from "styled-components";
 import wallet from "../assets/img/wallet.png";
 import faucet from "../assets/img/faucet.png";
 import PiggybankContainer from "./PiggybankContainer";
 import { useWallet } from "../contexts/WalletContext";
 import { claimUSDCService } from "../services/usdcClaimService";
+import { updateFirestoreBalance } from "../services/firebaseService";
 
 const Image = styled.img`
   height: 5rem;
@@ -52,8 +53,9 @@ interface ImagesContainerProps {
 
 const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
   const [animate, setAnimate] = useState(false);
-  const { depositAmount, walletAddress } = useWallet();
+  const { depositAmount, setDepositAmount, walletAddress } = useWallet();
   const prevDepositAmountRef = useRef(depositAmount);
+  const [loading, setLoading] = useState<boolean>(false); // Loading state for loading spinner
 
   useEffect(() => {
     if (depositAmount > prevDepositAmountRef.current) {
@@ -72,13 +74,17 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
     });
     if (walletAddress && depositAmount > 0) {
       try {
-        // Make sure you're passing the parameters in the correct order
         const result = await claimUSDCService(walletAddress, depositAmount);
         console.log("Claim successful:", result);
-        // Handle successful claim (e.g., update UI, show success message)
+
+        // Update Firestore balance to 0 after successful claim
+        await updateFirestoreBalance(walletAddress, 0);
+        // Update DepositAmount to 0
+        setDepositAmount(0);
+        alert("Claim successful! Your balance has been updated.");
       } catch (error) {
         console.error("Claim failed:", error);
-        // Handle error (e.g., show error message to user)
+        alert("Claim failed. Please try again.");
       }
     }
   };
