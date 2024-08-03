@@ -7,8 +7,6 @@ import {
   getDocs,
   query,
   where,
-  updateDoc,
-  doc,
 } from "../config/firebaseConfig.js";
 
 dotenv.config();

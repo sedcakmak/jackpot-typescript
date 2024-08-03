@@ -5,6 +5,7 @@ import wallet from "../assets/img/wallet.png";
 import faucet from "../assets/img/faucet.png";
 import PiggybankContainer from "./PiggybankContainer";
 import { useWallet } from "../contexts/WalletContext";
+import { claimUSDCService } from "../services/usdcClaimService";
 
 const Image = styled.img`
   height: 5rem;
@@ -51,7 +52,7 @@ interface ImagesContainerProps {
 
 const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
   const [animate, setAnimate] = useState(false);
-  const { depositAmount } = useWallet();
+  const { depositAmount, walletAddress } = useWallet();
   const prevDepositAmountRef = useRef(depositAmount);
 
   useEffect(() => {
@@ -63,6 +64,24 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
     }
     prevDepositAmountRef.current = depositAmount;
   }, [depositAmount]);
+
+  const handleClaim = async () => {
+    console.log("Claiming with:", {
+      walletAddress,
+      depositAmount,
+    });
+    if (walletAddress && depositAmount > 0) {
+      try {
+        // Make sure you're passing the parameters in the correct order
+        const result = await claimUSDCService(walletAddress, depositAmount);
+        console.log("Claim successful:", result);
+        // Handle successful claim (e.g., update UI, show success message)
+      } catch (error) {
+        console.error("Claim failed:", error);
+        // Handle error (e.g., show error message to user)
+      }
+    }
+  };
 
   return (
     <Container fluid>
@@ -87,7 +106,7 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
               }
             />
           </div>
-          <ClaimButton>Claim</ClaimButton>
+          <ClaimButton onClick={handleClaim}>Claim</ClaimButton>
         </Col>
       </Row>
     </Container>
