@@ -53,8 +53,8 @@ const Instructions: React.FC<InstructionsProps> = ({ show, handleClose }) => (
         using Testnet USDC in this game.
         <br />
         <br />
-        Once you're all set up, click on the piggy bank to deposit some USDC
-        from your wallet. This will let you join the fun!
+        Once you're all set up, click on the Piggybank to deposit some USDC from
+        your wallet. This will let you join the fun!
         <br />
         <br />
         If you don't have enough deposits, click on the faucet to visit Circle's

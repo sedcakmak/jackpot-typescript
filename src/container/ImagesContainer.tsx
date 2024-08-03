@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Container, Row, Col, Spinner } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import styled from "styled-components";
 import wallet from "../assets/img/wallet.png";
 import faucet from "../assets/img/faucet.png";
@@ -55,7 +55,6 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
   const [animate, setAnimate] = useState(false);
   const { depositAmount, setDepositAmount, walletAddress } = useWallet();
   const prevDepositAmountRef = useRef(depositAmount);
-  const [loading, setLoading] = useState<boolean>(false); // Loading state for loading spinner
 
   useEffect(() => {
     if (depositAmount > prevDepositAmountRef.current) {
@@ -68,20 +67,14 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
   }, [depositAmount]);
 
   const handleClaim = async () => {
-    console.log("Claiming with:", {
-      walletAddress,
-      depositAmount,
-    });
     if (walletAddress && depositAmount > 0) {
       try {
         const result = await claimUSDCService(walletAddress, depositAmount);
-        console.log("Claim successful:", result);
 
-        // Update Firestore balance to 0 after successful claim
+        // Update Firestore and local balance
         await updateFirestoreBalance(walletAddress, 0);
-        // Update DepositAmount to 0
         setDepositAmount(0);
-        alert("Claim successful! Your balance has been updated.");
+        alert("Claim successful! Your wallet's balance has been updated.");
       } catch (error) {
         console.error("Claim failed:", error);
         alert("Claim failed. Please try again.");
@@ -100,6 +93,7 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
             <Image
               src={wallet}
               alt="Wallet"
+              title="Create new wallet or check the balance"
               onClick={onWalletClick}
             />
             <PiggybankContainer animate={animate} />
@@ -107,6 +101,7 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
             <Image
               src={faucet}
               alt="Faucet"
+              title="Go to faucet to get some USDC tokens in your wallet"
               onClick={() =>
                 window.open("https://faucet.circle.com/", "_blank")
               }

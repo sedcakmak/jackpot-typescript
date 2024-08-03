@@ -1,5 +1,3 @@
-// firebaseConfig.ts
-
 import { initializeApp, FirebaseApp } from "firebase/app";
 import {
   getFirestore,
@@ -24,17 +22,12 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-console.log("Firebase Config:", JSON.stringify(firebaseConfig, null, 2));
-
 let app: FirebaseApp;
 let db: Firestore;
 
 try {
   app = initializeApp(firebaseConfig);
-  console.log("Firebase app initialized successfully");
-
   db = getFirestore(app);
-  console.log("Firestore initialized successfully");
 } catch (error) {
   console.error("Error initializing Firebase:", error);
 }

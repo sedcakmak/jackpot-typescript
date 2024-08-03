@@ -24,7 +24,6 @@ const acquireSessionToken = async (userId) => {
 
   const response = await fetch(url, options);
   const data = await response.json();
-  console.log("New session token acquired:", data.data);
 
   return {
     userToken: data.data.userToken,
@@ -33,11 +32,6 @@ const acquireSessionToken = async (userId) => {
 };
 
 export const transferUSDC = async (walletAddress, amount) => {
-  console.log("TRANSFERUSDC WORKING");
-  console.log("Params:", { walletAddress, amount });
-  console.log("Amount type:", typeof amount);
-  console.log("Amount value:", amount);
-
   if (!walletAddress || amount === undefined || amount === null) {
     throw new Error(
       `Invalid walletAddress or amount.  WalletAddress: ${walletAddress}, Amount: ${amount}`
@@ -50,11 +44,8 @@ export const transferUSDC = async (walletAddress, amount) => {
   const querySnapshot = await getDocs(q);
 
   if (querySnapshot.empty) {
-    console.log("No matching wallet found in the database.");
     const allWalletsSnapshot = await getDocs(walletsRef);
-    allWalletsSnapshot.forEach((doc) => {
-      console.log("Wallet:", doc.id, doc.data().walletAddress);
-    });
+    allWalletsSnapshot.forEach((doc) => {});
     throw new Error(
       `No matching wallet found in the database for address: ${walletAddress}`
     );
@@ -62,7 +53,6 @@ export const transferUSDC = async (walletAddress, amount) => {
 
   const walletDoc = querySnapshot.docs[0];
   const walletData = walletDoc.data();
-  console.log("WALLET DATA FROM FIRESTORE", walletData);
 
   const { userId, walletId } = walletData;
 
@@ -83,8 +73,6 @@ export const transferUSDC = async (walletAddress, amount) => {
       walletId: walletId,
     };
 
-    console.log("Transfer request body:", JSON.stringify(requestBody));
-
     const options = {
       method: "POST",
       headers: {
@@ -97,28 +85,11 @@ export const transferUSDC = async (walletAddress, amount) => {
 
     const response = await fetch(url, options);
     const data = await response.json();
-    console.log("Circle API response status:", response.status);
-    console.log("Circle API response data:", data);
 
     if (!response.ok) {
       throw new Error(data.message || "Transfer failed");
     }
-
-    console.log("Transfer initiated:", data);
-
     if (data.data && data.data.challengeId) {
-      console.log("Challenge received. ChallengeId:", data.data.challengeId);
-
-      // Here you would typically return the challengeId to the frontend
-      // where the Circle Web SDK would be used to complete the challenge
-
-      // Update Firestore with the new balance
-      // const newBalance =
-      //   parseFloat(walletData.balance || 0) + parseFloat(amount);
-      // await updateDoc(doc(db, "wallets", walletDoc.id), {
-      //   balance: newBalance,
-      // });
-
       return {
         status: "challenge_required",
         challengeId: data.data.challengeId,
@@ -126,11 +97,8 @@ export const transferUSDC = async (walletAddress, amount) => {
         encryptionKey: newEncryptionKey,
       };
     }
-    console.log(
-      "Sending back encryption key:",
-      newEncryptionKey || walletData.encryptionKey
-    );
-    // If no challenge is required (unlikely in this case)
+
+    // If no challenge is required
     return {
       status: "success",
       data: data,

@@ -11,8 +11,6 @@ import {
 } from "../services/firebaseService";
 import { WalletInfo } from "../services/walletUtils";
 
-//import { transferTokens as transferTokensService } from "../services/tokenService";
-
 interface WalletContextType {
   depositAmount: number;
   setDepositAmount: React.Dispatch<React.SetStateAction<number>>;
@@ -54,7 +52,6 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
         setDepositAmount(newBalance);
       } catch (error) {
         console.error("Failed to update balance in Firestore", error);
-        // You might want to handle this error, perhaps by setting an error state
       }
     },
     []
