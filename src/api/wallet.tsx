@@ -1,8 +1,8 @@
 export const checkBalance = async (id: string): Promise<number> => {
   try {
-    const response = await fetch(
-      `http://localhost:3001/api/check-balance/${id}`
-    );
+    const apiUrl = process.env.REACT_APP_API_URL;
+    const response = await fetch(`${apiUrl}/api/check-balance/${id}`);
+
     if (!response.ok) {
       throw new Error("Error checking balance from backend");
     }

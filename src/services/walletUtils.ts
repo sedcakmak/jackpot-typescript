@@ -12,12 +12,11 @@ export interface WalletInfo {
   userId: string;
   encryptionKey: string;
 }
+const apiUrl = process.env.REACT_APP_API_URL;
 
 export const handleCreateWallet = async (): Promise<WalletInfo | null> => {
   try {
-    const response = await axios.post(
-      "http://localhost:3001/api/create-wallet"
-    );
+    const response = await axios.post(`${apiUrl}/api/create-wallet`);
 
     const { appId, userToken, encryptionKey, challengeId, userId } =
       response.data;
@@ -78,7 +77,7 @@ export const getWalletInfo = async (
   userToken: string
 ): Promise<WalletInfo | null> => {
   try {
-    const response = await axios.get(`http://localhost:3001/api/wallet-info/`, {
+    const response = await axios.get(`${apiUrl}/api/create-wallet`, {
       headers: {
         Authorization: `Bearer ${userToken}`,
       },
