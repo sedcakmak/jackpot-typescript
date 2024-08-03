@@ -96,7 +96,7 @@ const SlotMachine: React.FC = () => {
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasSpun = useRef(false);
 
-  const { depositAmount, setDepositAmount, updateBalance, walletInfo } =
+  const { depositAmount, setDepositAmount, updateBalance, walletAddress } =
     useWallet();
 
   useEffect(() => {
@@ -118,32 +118,34 @@ const SlotMachine: React.FC = () => {
     }
   }, [result, prize]);
 
-  useEffect(() => {
-    if (walletInfo && walletInfo.address) {
-      // You'll need to pass walletAddress to this component
-      updateBalance(walletInfo.address, depositAmount);
-    }
-  }, [depositAmount, walletInfo, updateBalance]);
+  const handleStop = () => {
+    setIsRunning(false);
+  };
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (depositAmount < 0.5) {
       setShowBadgeModal(true);
       return;
     }
 
-    setDepositAmount((prevValue) => prevValue - 0.5);
+    try {
+      const newBalance = depositAmount - 0.5;
+      if (walletAddress) {
+        await updateBalance(walletAddress, newBalance);
+      }
 
-    setIsRunning(true);
-    setResult(null);
-    setPrize(0);
-    hasSpun.current = true;
+      setDepositAmount(newBalance);
+      setIsRunning(true);
+      setResult(null);
+      setPrize(0);
+      hasSpun.current = true;
+    } catch (error) {
+      console.error("Error updating balance:", error);
+      // Handle the error appropriately, maybe show an error message to the user
+    }
   };
 
-  const handleStop = () => {
-    setIsRunning(false);
-  };
-
-  const handleResult = (wheels: string[]) => {
+  const handleResult = async (wheels: string[]) => {
     if (!hasSpun.current) return;
 
     const images = wheels.map((wheel) => wheel.split("/").pop());
@@ -164,8 +166,19 @@ const SlotMachine: React.FC = () => {
       newPrize = NON_CONSEC_PRIZE;
     }
 
-    setPrize(newPrize);
-    setDepositAmount((prevValue) => prevValue + newPrize);
+    try {
+      const updatedBalance = depositAmount + newPrize;
+
+      if (walletAddress) {
+        await updateBalance(walletAddress, updatedBalance);
+      }
+
+      setDepositAmount(updatedBalance);
+      setPrize(newPrize);
+    } catch (error) {
+      console.error("Error updating balance:", error);
+      // Handle the error appropriately, maybe show an error message to the user
+    }
   };
 
   const handleModalClose = () => setShowBadgeModal(false);

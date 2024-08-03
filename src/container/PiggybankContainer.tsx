@@ -15,7 +15,6 @@ import { transferUSDC } from "../services/api";
 import { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
 import { useWallet } from "../contexts/WalletContext";
 import { db, collection, getDocs, query, where } from "../firebaseConfig";
-
 import { fetchFirestoreBalance } from "../services/firebaseService";
 import { WalletInfo } from "../services/walletUtils";
 
@@ -89,7 +88,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
   const [amount, setAmount] = useState<string>("");
   const [walletData, setWalletData] = useState<any>(null);
   const [sdk, setSDK] = useState<W3SSdk | null>(null);
-
+  const { setWalletAddress } = useWallet();
   const { depositAmount, setDepositAmount, updateBalance } = useWallet();
 
   const handleClearInput = () => {
@@ -109,6 +108,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
     if (!sourceWalletAddress) {
       return setError("Please enter a wallet address.");
     }
+    setWalletAddress(sourceWalletAddress);
     try {
       // Step 1: Search Firestore for the Wallet Address
       const walletsRef = collection(db, "wallets");
