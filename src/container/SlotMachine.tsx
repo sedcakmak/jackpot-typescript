@@ -5,6 +5,8 @@ import { Container, Row, Col, Modal, Button } from "react-bootstrap";
 import { ReactComponent as USDCSvg } from "../assets/img/svg/usdc.svg";
 import Spinner from "./Spinner";
 import Sound from "../components/Sound";
+import { useWallet } from "../contexts/WalletContext";
+import { WalletInfo } from "../services/walletUtils";
 
 const scaleUpDown = keyframes`
   0% {
@@ -86,16 +88,16 @@ const MAX_PRIZE = 100;
 const CONSEC_PRIZE = 10;
 const NON_CONSEC_PRIZE = 1;
 
-const SlotMachine: React.FC<{
-  badgeValue: number;
-  setBadgeValue: React.Dispatch<React.SetStateAction<number>>;
-}> = ({ badgeValue, setBadgeValue }) => {
+const SlotMachine: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<"win" | "lose" | null>(null);
   const [prize, setPrize] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const hasSpun = useRef(false);
+
+  const { depositAmount, setDepositAmount, updateBalance, walletAddress } =
+    useWallet();
 
   useEffect(() => {
     if (isRunning) {
@@ -116,26 +118,34 @@ const SlotMachine: React.FC<{
     }
   }, [result, prize]);
 
-  const handleStart = () => {
-    if (badgeValue < 0.5) {
-      setShowBadgeModal(true);
-      return;
-    }
-
-
-    setBadgeValue((prevValue) => prevValue - 0.5);
-
-    setIsRunning(true);
-    setResult(null);
-    setPrize(0);
-    hasSpun.current = true;
-  };
-
   const handleStop = () => {
     setIsRunning(false);
   };
 
-  const handleResult = (wheels: string[]) => {
+  const handleStart = async () => {
+    if (depositAmount < 0.5) {
+      setShowBadgeModal(true);
+      return;
+    }
+
+    try {
+      const newBalance = depositAmount - 0.5;
+      if (walletAddress) {
+        await updateBalance(walletAddress, newBalance);
+      }
+
+      setDepositAmount(newBalance);
+      setIsRunning(true);
+      setResult(null);
+      setPrize(0);
+      hasSpun.current = true;
+    } catch (error) {
+      console.error("Error updating balance:", error);
+      // Handle the error appropriately, maybe show an error message to the user
+    }
+  };
+
+  const handleResult = async (wheels: string[]) => {
     if (!hasSpun.current) return;
 
     const images = wheels.map((wheel) => wheel.split("/").pop());
@@ -156,8 +166,19 @@ const SlotMachine: React.FC<{
       newPrize = NON_CONSEC_PRIZE;
     }
 
-    setPrize(newPrize);
-    setBadgeValue((prevValue) => prevValue + newPrize);
+    try {
+      const updatedBalance = depositAmount + newPrize;
+
+      if (walletAddress) {
+        await updateBalance(walletAddress, updatedBalance);
+      }
+
+      setDepositAmount(updatedBalance);
+      setPrize(newPrize);
+    } catch (error) {
+      console.error("Error updating balance:", error);
+      // Handle the error appropriately, maybe show an error message to the user
+    }
   };
 
   const handleModalClose = () => setShowBadgeModal(false);
@@ -185,7 +206,7 @@ const SlotMachine: React.FC<{
       </ButtonWrapper>
       <ResultText>
         {result === "win" && hasSpun.current && (
-          <> 
+          <>
             {prize === MAX_PRIZE && showConfetti && (
               <Confetti
                 width={window.innerWidth}

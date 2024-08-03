@@ -56,7 +56,6 @@ const Title = styled.h1`
 const App: React.FC = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const [badgeValue, setBadgeValue] = useState(0);
 
   const handleClose = () => setShowInstructions(false);
   const handleShow = () => setShowInstructions(true);
@@ -83,20 +82,14 @@ const App: React.FC = () => {
               md={4}
               className="d-flex justify-content-center align-items-center my-3"
             >
-              <SlotMachine
-                badgeValue={badgeValue}
-                setBadgeValue={setBadgeValue}
-              />
+              <SlotMachine />
             </Col>
             <Col
               xs={12}
               md={4}
               className="d-flex justify-content-center align-items-center"
             >
-              <ImagesContainer
-                onWalletClick={handleWalletShow}
-                badgeValue={badgeValue}
-              />
+              <ImagesContainer onWalletClick={handleWalletShow} />
             </Col>
           </Row>
         </Container>

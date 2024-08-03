@@ -10,9 +10,13 @@ import {
 import { XCircle } from "react-bootstrap-icons";
 import piggybank from "../assets/img/piggybank.png";
 import { checkBalance } from "../api/wallet";
-import { db, collection, getDocs, query, where } from "../firebaseConfig";
+
 import { transferUSDC } from "../services/api";
 import { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
+import { useWallet } from "../contexts/WalletContext";
+import { db, collection, getDocs, query, where } from "../firebaseConfig";
+import { fetchFirestoreBalance } from "../services/firebaseService";
+import { WalletInfo } from "../services/walletUtils";
 
 const wiggle = keyframes`
   0% { transform: rotate(-1deg); }
@@ -73,24 +77,19 @@ const ClearButton = styled.button`
 
 interface PiggybankContainerProps {
   animate: boolean;
-  badgeValue: number;
 }
 
-const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
-  animate,
-  badgeValue,
-}) => {
+const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modalMessage, setModalMessage] = useState<string>("");
   const [sourceWalletAddress, setSourceWalletAddress] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
-  const [showTransactionButton, setShowTransactionButton] =
-    useState<boolean>(false);
   const [walletData, setWalletData] = useState<any>(null);
-  const [depositAmount, setDepositAmount] = useState<string | null>(null);
   const [sdk, setSDK] = useState<W3SSdk | null>(null);
+  const { setWalletAddress } = useWallet();
+  const { depositAmount, setDepositAmount, updateBalance } = useWallet();
 
   const handleClearInput = () => {
     setSourceWalletAddress("");
@@ -109,6 +108,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
     if (!sourceWalletAddress) {
       return setError("Please enter a wallet address.");
     }
+    setWalletAddress(sourceWalletAddress);
     try {
       // Step 1: Search Firestore for the Wallet Address
       const walletsRef = collection(db, "wallets");
@@ -129,7 +129,6 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
       console.log("WALLET DATA FROM FIRESTORE", walletData);
 
       await fetchBalance(walletData.walletId);
-      setShowTransactionButton(true);
     } catch (error) {
       console.error("Error making deposit:", error);
       setError("Failed to make deposit. Please try again.");
@@ -161,13 +160,15 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
     setError(null);
     setSourceWalletAddress("");
     setAmount("");
-    setShowTransactionButton(false);
     setModalMessage("");
     setWalletData(null);
   };
 
   const makeDeposit = async (walletData: any) => {
-    //setShowModal(false);
+    setShowModal(false);
+
+    console.log("makeDeposit called with walletData:", walletData);
+    console.log("Amount to deposit:", amount);
 
     // Step 1: Check if the amount is not null, not equal to 0, and below the balance
     if (!amount || parseFloat(amount) === 0) {
@@ -180,17 +181,19 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
       return;
     }
 
-    console.log("makeDeposit called with walletData:", walletData);
-
     try {
       console.log("Attempting USDC transfer");
 
-      const result = await transferUSDC(
-        walletData.walletAddress
-        //  amount,
-        //  walletData.userToken
-      );
+      const result = await transferUSDC(walletData.walletAddress, amount);
       console.log("Transfer result:", result);
+
+      if (result.status !== "challenge_required") {
+        throw new Error("Expected a challenge, but none was required.");
+      }
+
+      if (!sdk) {
+        throw new Error("SDK is not initialized.");
+      }
 
       if (result.status === "challenge_required" && sdk) {
         const encryptionKey = result.encryptionKey || walletData.encryptionKey;
@@ -206,7 +209,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
           encryptionKey: result.encryptionKey,
         });
 
-        sdk.execute(result.challengeId, (error, challengeResult) => {
+        sdk.execute(result.challengeId, async (error, challengeResult) => {
           if (error) {
             console.error("Challenge execution error:", error);
             setError(`Failed to complete the challenge: ${error.message}`);
@@ -218,8 +221,37 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
             switch (challengeResult.status.toLowerCase()) {
               case "complete":
                 console.log("Deposit successful");
-                // Handle successful deposit
+                const depositAmountNumber = parseFloat(amount);
+
+                // Fetch the current balance from Firestore
+                const currentFirestoreBalance = await fetchFirestoreBalance(
+                  walletData.walletAddress
+                );
+
+                // Calculate the new balance
+                const newBalance =
+                  currentFirestoreBalance + depositAmountNumber;
+
+                // const newBalance =
+                //   (balance !== null ? balance : 0) + depositAmountNumber;
+                try {
+                  // Update local state
+                  setDepositAmount(
+                    (prevAmount) => prevAmount + depositAmountNumber
+                  );
+
+                  // Update Firestore
+                  await updateBalance(walletData.walletAddress, newBalance);
+                  setBalance(newBalance);
+                } catch (error) {
+                  console.error("Error updating Firestore balance:", error);
+                  setError(
+                    "Failed to update balance. Please check your balance and try again if needed."
+                  );
+                }
+
                 break;
+
               case "failed":
                 console.error("Challenge failed:", challengeResult);
                 setError("Failed to complete the challenge. Please try again.");
@@ -240,12 +272,10 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
                   "Unknown challenge status:",
                   challengeResult.status
                 );
+                setError("Unexpected challenge status. Please try again.");
             }
           }
         });
-      } else {
-        console.log("Deposit successful");
-        // Handle successful deposit
       }
     } catch (error) {
       console.error("Error making deposit:", error);
@@ -262,7 +292,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
         onClick={displayPiggybankModal}
       />
       <h6>
-        <Badge bg="primary">{badgeValue} USDC</Badge>
+        <Badge bg="primary">{depositAmount} USDC</Badge>
       </h6>
       <Modal
         show={showModal}
@@ -322,26 +352,6 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({
                   Submit
                 </Button>
               </Form.Group>
-              {showTransactionButton && (
-                <>
-                  <Form.Group controlId="formAmount">
-                    <Form.Label>Amount to Deposit</Form.Label>
-                    <Form.Control
-                      type="number"
-                      placeholder="Enter amount"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                    />
-                  </Form.Group>
-                  <Button
-                    variant="success"
-                    style={{ marginTop: "10px" }}
-                    onClick={() => makeDeposit(walletData)}
-                  >
-                    Make Transaction
-                  </Button>
-                </>
-              )}
             </Form>
           )}
         </Modal.Body>

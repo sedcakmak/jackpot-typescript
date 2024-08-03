@@ -238,13 +238,48 @@ router.get("/check-balance/:id", async (req, res) => {
   }
 });
 
+// Current user's wallet information
+
+router.get("/current-wallet", async (req, res) => {
+  try {
+    const userToken = req.headers.authorization.split(" ")[1];
+
+    if (!userToken) {
+      return res.status(400).json({ error: "User token is missing" });
+    }
+
+    const walletDocRef = doc(db, "wallets", userToken);
+    const walletDoc = await getDoc(walletDocRef);
+
+    if (walletDoc.exists()) {
+      const walletData = walletDoc.data();
+      res.json({
+        walletId: walletData.walletId,
+        walletAddress: walletData.walletAddress,
+      });
+    } else {
+      res.status(404).json({ error: "Wallet not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching current wallet:", error);
+    res.status(500).json({ error: "Failed to fetch wallet info" });
+  }
+});
+
+// Transfer
+
 router.post("/transfer-usdc", async (req, res) => {
   console.log("Received transfer request:", req.body);
 
   try {
-    const { walletAddress } = req.body;
-    console.log("Extracted data:", { walletAddress });
-    const result = await transferUSDC(walletAddress);
+    const { walletAddress, amount } = req.body;
+    console.log("Extracted data:", { walletAddress, amount });
+
+    if (!walletAddress || !amount) {
+      throw new Error("Missing walletAddress or amount");
+    }
+
+    const result = await transferUSDC(walletAddress, amount);
     console.log("Transfer result:", result);
 
     res.json(result);

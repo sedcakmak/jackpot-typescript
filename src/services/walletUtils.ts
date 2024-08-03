@@ -19,7 +19,8 @@ export const handleCreateWallet = async (): Promise<WalletInfo | null> => {
       "http://localhost:3001/api/create-wallet"
     );
 
-    const { appId, userToken, encryptionKey, challengeId } = response.data;
+    const { appId, userToken, encryptionKey, challengeId, userId } =
+      response.data;
 
     const sdk = new W3SSdk({
       appSettings: {
