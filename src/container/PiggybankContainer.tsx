@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled, { keyframes, css } from "styled-components";
 import {
   Badge,
@@ -16,7 +16,6 @@ import { W3SSdk } from "@circle-fin/w3s-pw-web-sdk";
 import { useWallet } from "../contexts/WalletContext";
 import { db, collection, getDocs, query, where } from "../firebaseConfig";
 import { fetchFirestoreBalance } from "../services/firebaseService";
-import { WalletInfo } from "../services/walletUtils";
 
 const wiggle = keyframes`
   0% { transform: rotate(-1deg); }
@@ -90,6 +89,7 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
   const [sdk, setSDK] = useState<W3SSdk | null>(null);
   const { setWalletAddress } = useWallet();
   const { depositAmount, setDepositAmount, updateBalance } = useWallet();
+  const depositAmountRef = useRef(depositAmount);
 
   const handleClearInput = () => {
     setSourceWalletAddress("");
@@ -103,12 +103,19 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
     setSDK(initSDK);
   }, []);
 
+  useEffect(() => {
+    depositAmountRef.current = depositAmount;
+    console.log("Deposit amount changed:", depositAmount);
+  }, [depositAmount]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sourceWalletAddress) {
       return setError("Please enter a wallet address.");
     }
     setWalletAddress(sourceWalletAddress);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     try {
       // Step 1: Search Firestore for the Wallet Address
       const walletsRef = collection(db, "wallets");
@@ -139,11 +146,31 @@ const PiggybankContainer: React.FC<PiggybankContainerProps> = ({ animate }) => {
     try {
       const currentBalance = await checkBalance(walletId);
       setBalance(currentBalance);
-      setModalMessage(
-        currentBalance >= 0.5
-          ? `You have ${currentBalance} USDC in your wallet. How much do you want to deposit?`
-          : `You have ${currentBalance} USDC in your wallet. Please visit the faucet to deposit some USDC into your wallet.`
-      );
+
+      console.log("Current Balance:", currentBalance);
+      console.log("Deposit Amount (ref):", depositAmountRef.current);
+
+      if (currentBalance === 0 && depositAmountRef.current > 0.5) {
+        console.log(
+          "Condition met: currentBalance === 0 && depositAmount > 0.5"
+        );
+
+        setModalMessage(
+          `You have ${currentBalance} USDC in your wallet and ${depositAmountRef.current} USDC in your piggyBank. You can close this modal and play.`
+        );
+      } else if (currentBalance >= 0.5) {
+        console.log("Condition met: currentBalance >= 0.5");
+
+        setModalMessage(
+          `You have ${currentBalance} USDC in your wallet. How much do you want to deposit?`
+        );
+      } else {
+        console.log("No conditions met");
+
+        setModalMessage(
+          `You have ${currentBalance} USDC in your wallet. Please visit the faucet to deposit some USDC into your wallet.`
+        );
+      }
     } catch (err) {
       console.error("Error fetching balance:", err);
       setError("Error fetching balance. Please try again.");
