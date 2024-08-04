@@ -76,7 +76,7 @@ export const getWalletInfo = async (
   userToken: string
 ): Promise<WalletInfo | null> => {
   try {
-    const response = await axios.get(`${apiUrl}/api/create-wallet`, {
+    const response = await axios.get(`${apiUrl}/api/wallet-info`, {
       headers: {
         Authorization: `Bearer ${userToken}`,
       },
