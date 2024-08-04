@@ -28,9 +28,19 @@ const Spinner: React.FC<SpinnerProps> = ({ spin, onStop }) => {
   const isSpinning = useRef<NodeJS.Timeout | null>(null);
 
   const images = [orange, watermelon, horseshoe, star, cherry, bell, seven];
+  const randomImage = () => images[Math.floor(Math.random() * images.length)];
+
+  const spinWheels = () => {
+    setWheels([randomImage(), randomImage(), randomImage()]);
+  };
+
+  const tick = () => {
+    isSpinning.current = setInterval(spinWheels, 50);
+  };
 
   useEffect(() => {
     setWheels([randomImage(), randomImage(), randomImage()]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -50,17 +60,8 @@ const Spinner: React.FC<SpinnerProps> = ({ spin, onStop }) => {
     }
 
     return () => clearInterval(isSpinning.current!);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spinning]);
-
-  const randomImage = () => images[Math.floor(Math.random() * images.length)];
-
-  const spinWheels = () => {
-    setWheels([randomImage(), randomImage(), randomImage()]);
-  };
-
-  const tick = () => {
-    isSpinning.current = setInterval(spinWheels, 50);
-  };
 
   return (
     <React.Fragment>
