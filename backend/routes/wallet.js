@@ -3,6 +3,7 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "dotenv/config";
 import { transferUSDC } from "../services/transferUSDC.js";
+import { claimUSDC } from "../services/claimUSDC.js";
 import {
   db,
   doc,

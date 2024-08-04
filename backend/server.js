@@ -8,7 +8,6 @@ const port = process.env.PORT || 3001;
 app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
 
-// Use the wallet router for all wallet-related routes
 app.use("/api", walletRouter);
 
 app.listen(port, () => {

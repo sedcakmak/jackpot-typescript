@@ -7,7 +7,7 @@ import jingle from "../assets/audio/jingle.wav";
 // import start from "../assets/audio/start.wav";
 
 interface SoundProps {
-  audio: "win" | "fail" | "coin" | "slotmachine" | "jingle";
+  audio: "fail" | "coin" | "slotmachine" | "jingle";
 }
 
 const audios: Record<string, string> = { fail, coin, slotmachine, jingle };

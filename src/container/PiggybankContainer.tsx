@@ -59,7 +59,6 @@ const Container = styled.div`
 
 const BalanceInfo = styled.div`
   margin-top: 1rem;
-  // text-align: center;
 `;
 
 const StyledInputGroup = styled(BootstrapInputGroup)`

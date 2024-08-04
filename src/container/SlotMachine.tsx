@@ -6,7 +6,6 @@ import { ReactComponent as USDCSvg } from "../assets/img/svg/usdc.svg";
 import Spinner from "./Spinner";
 import Sound from "../components/Sound";
 import { useWallet } from "../contexts/WalletContext";
-import { WalletInfo } from "../services/walletUtils";
 
 const scaleUpDown = keyframes`
   0% {
@@ -142,7 +141,6 @@ const SlotMachine: React.FC = () => {
       hasSpun.current = true;
     } catch (error) {
       console.error("Error updating balance:", error);
-      // Handle the error appropriately, maybe show an error message to the user
     }
   };
 
@@ -179,7 +177,6 @@ const SlotMachine: React.FC = () => {
       setDepositAmount(updatedBalance);
     } catch (error) {
       console.error("Error updating balance:", error);
-      // Handle the error appropriately, maybe show an error message to the user
     }
   };
 

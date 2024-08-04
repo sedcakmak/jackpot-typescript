@@ -5,7 +5,7 @@ import wallet from "../assets/img/wallet.png";
 import faucet from "../assets/img/faucet.png";
 import PiggybankContainer from "./PiggybankContainer";
 import { useWallet } from "../contexts/WalletContext";
-import { claimUSDCService } from "../services/usdcClaimService";
+import { claimUSDC } from "../services/api";
 import { updateFirestoreBalance } from "../services/firebaseService";
 
 const Image = styled.img`
@@ -69,7 +69,7 @@ const ImagesContainer: React.FC<ImagesContainerProps> = ({ onWalletClick }) => {
   const handleClaim = async () => {
     if (walletAddress && depositAmount > 0) {
       try {
-        const result = await claimUSDCService(walletAddress, depositAmount);
+        await claimUSDC(walletAddress, depositAmount);
 
         // Update Firestore and local balance
         await updateFirestoreBalance(walletAddress, 0);

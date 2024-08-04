@@ -98,7 +98,7 @@ export const transferUSDC = async (walletAddress, amount) => {
       };
     }
 
-    // If no challenge is required (unlikely in this case)
+    // If no challenge is required
     return {
       status: "success",
       data: data,
