@@ -10,6 +10,7 @@ module.exports = function override(config) {
     buffer: require.resolve("buffer"),
     util: require.resolve("util"),
     process: require.resolve("process/browser"),
+    vm: require.resolve("vm-browserify"),
   });
   config.resolve.fallback = fallback;
 
