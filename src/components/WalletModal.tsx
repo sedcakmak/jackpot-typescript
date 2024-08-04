@@ -28,7 +28,7 @@ const WalletContainer = styled.div`
 
 const WalletImage = styled.img`
   width: "100px";
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease;
   &:hover {
     transform: scale(1.2);
   }
