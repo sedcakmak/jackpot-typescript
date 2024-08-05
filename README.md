@@ -27,6 +27,7 @@ Users should be able to:
 ### Screenshot
 
 ![quickwinss](https://github.com/user-attachments/assets/9d285243-4fa8-402c-8670-7a71fdda6c9c)
+![quickwinssjackpot](https://github.com/user-attachments/assets/d6c70e57-c66a-4834-a3e4-bf44adbd74bf)
 
 ### Built with
 
