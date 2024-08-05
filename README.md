@@ -19,7 +19,7 @@ Users should be able to:
 - View game instructions for a general overview.
 - Create user-controlled wallets.
 - Fund wallets with Testnet USDC tokens using a faucet.
-- -Deposit USDC into the Piggy Bank to start playing. (Make a transaction to a developer-controlled wallet using their wallet address and PIN code)
+- Deposit USDC into the Piggy Bank to start playing. (Make a transaction to a developer-controlled wallet using their wallet address and PIN code)
 - Check their balance within the Piggy Bank.
 - Spin the wheel to play and win USDC tokens.
 - Claim winnings by transferring USDC from the developer-controlled wallet back to their own wallet.
