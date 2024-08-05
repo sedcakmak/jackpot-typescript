@@ -1,46 +1,49 @@
-# Getting Started with Create React App
+# Quick Win Slot Machine Game
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Quick Win Slot Machine Game is built for Frontend & Backend Devs Challenge organized by RiseIn and Patika.Dev. The game integrates Circle's Programmable Wallets.
 
-## Available Scripts
+## Table of contents
 
-In the project directory, you can run:
+- [Overview](#overview)
+  - [Screenshot](#screenshot)
+  - [Built with](#built-with)
+  - [Continued development](#continued-development)
+- [Requirements](#requirements)
+  
+## Overview
 
-### `npm start`
+Quick Win Slot Machine Game is a simple slot machine game. The game incorporates Circle's solutions and especially aims users unfamiliar with Web3 technologies. Users will create a user-controlled wallet, fund it using a faucet, and make a deposit to Piggy Bank to initiate playing the game. Each spin costs them 0.5 USDCs and there are several winning conditions mentioned in the Instructions. The game uses Testnet USDCs, not real currencies (for now at least!).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Users should be able to:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- View game instructions for a general overview.
+- Create user-controlled wallets.
+- Fund wallets with Testnet USDC tokens using a faucet.
+- -Deposit USDC into the Piggy Bank to start playing. (Make a transaction to a developer-controlled wallet using their wallet address and PIN code)
+- Check their balance within the Piggy Bank.
+- Spin the wheel to play and win USDC tokens.
+- Claim winnings by transferring USDC from the developer-controlled wallet back to their own wallet.
 
-### `npm test`
+### Screenshot
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+![quickwinss](https://github.com/user-attachments/assets/9d285243-4fa8-402c-8670-7a71fdda6c9c)
 
-### `npm run build`
+### Built with
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Typescript, ReactJS with Styled Components and React_Bootstrap for Frontend
+- NodeJS and ExpressJS for Backend
+- Circle's APIs
+- Firestore
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Continued development
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+As a beginner in Web3 technologies, this project helped me improve my knowledge in web3 with a special focus on Circle's solutions. I gained insight about the Circle's Programmable Wallets and transaction between the wallets. I would like to improve game mechanics and integrate a Marketplace in which users can buy additional winning conditions or improved Piggy Bank models. I also aim to explore Circle's Cross-Chain Transfer Protocol (CCTP) for future development.
 
-### `npm run eject`
+### Requirements
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+To run this project locally, make sure you have Node.js and installed on your machine. You also need to have Circle and Firestore accounts. You have to create a .env file both for backend and frontend including information regarding these accounts. 
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
