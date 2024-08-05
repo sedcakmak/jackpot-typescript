@@ -39,7 +39,7 @@ Users should be able to:
 
 As a beginner in Web3 technologies, this project helped me improve my knowledge in web3 with a special focus on Circle's solutions. I gained insight about the Circle's Programmable Wallets and transaction between the wallets. I would like to improve game mechanics and integrate a Marketplace in which users can buy additional winning conditions or improved Piggy Bank models. I also aim to explore Circle's Cross-Chain Transfer Protocol (CCTP) for future development.
 
-### Requirements
+## Requirements
 
 To run this project locally, make sure you have Node.js and installed on your machine. You also need to have Circle and Firestore accounts. You have to create a .env file both for backend and frontend including information regarding these accounts. 
 
