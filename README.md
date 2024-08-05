@@ -41,7 +41,7 @@ As a beginner in Web3 technologies, this project helped me improve my knowledge 
 
 ## Requirements
 
-To run this project locally, make sure you have Node.js and installed on your machine. You also need to have Circle and Firestore accounts. You have to create a .env file both for backend and frontend including information regarding these accounts. 
+To run this project locally, make sure you have Node.js installed on your machine. You also need to have Circle and Firestore accounts. You have to create a .env file both for backend and frontend including information regarding these accounts. 
 
 
 
