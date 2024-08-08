@@ -18,7 +18,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "node-fetch": "^3.3.2"
+    "firebase": "^10.12.5",
+    "node-fetch": "^3.3.2",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "ts-node": "^10.9.2",
