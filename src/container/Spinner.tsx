@@ -40,7 +40,6 @@ const Spinner: React.FC<SpinnerProps> = ({ spin, onStop }) => {
 
   useEffect(() => {
     setWheels([randomImage(), randomImage(), randomImage()]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -60,7 +59,6 @@ const Spinner: React.FC<SpinnerProps> = ({ spin, onStop }) => {
     }
 
     return () => clearInterval(isSpinning.current!);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spinning]);
 
   return (
